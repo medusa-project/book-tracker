@@ -1,7 +1,7 @@
 namespace :books do
-  desc 'Scans the filesystem for MARCXML records to import, and imports them.'
+  desc 'Scans for MARCXML records to import, and imports them.'
   task import: :environment do
-    Filesystem.new.import
+    RecordSource.new.import
   end
 
   desc 'Checks to see whether each book exists in Google.'

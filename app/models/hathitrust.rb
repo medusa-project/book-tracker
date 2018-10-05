@@ -15,7 +15,7 @@ class Hathitrust
   # (http://www.hathitrust.org/hathifiles).
   #
   def check
-    if Filesystem.import_in_progress? or Service.check_in_progress?
+    if RecordSource.import_in_progress? or Service.check_in_progress?
       raise 'Cannot check HathiTrust while another import or service check is '\
       'in progress.'
     end

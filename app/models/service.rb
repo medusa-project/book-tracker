@@ -6,7 +6,7 @@ class Service
   LOCAL_STORAGE = 3
 
   def self.check_in_progress?
-    Filesystem.import_in_progress? or Hathitrust.check_in_progress? or
+    RecordSource.import_in_progress? or Hathitrust.check_in_progress? or
         InternetArchive.check_in_progress? or Google.check_in_progress?
   end
 

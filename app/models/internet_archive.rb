@@ -11,7 +11,7 @@ class InternetArchive
   end
 
   def check
-    if Filesystem.import_in_progress? or Service.check_in_progress?
+    if RecordSource.import_in_progress? or Service.check_in_progress?
       raise 'Cannot check Internet Archive while another import or service '\
       'check is in progress.'
     end

@@ -1,12 +1,26 @@
-development: &development
-  :import_path: <%= ENV['BOOK_TRACKER_IMPORT_PATH'] %>
-  :library_nuc_code: UIU
+development:
+  :aws_access_key_id: <%= ENV['BOOK_TRACKER_DEVELOPMENT_AWS_ACCESS_KEY_ID'] %>
+  :aws_secret_key:    <%= ENV['BOOK_TRACKER_DEVELOPMENT_AWS_SECRET_KEY'] %>
+  :aws_region:        <%= ENV['BOOK_TRACKER_DEVELOPMENT_AWS_REGION'] %>
+  :library_nuc_code:  UIU
+  :s3_endpoint:       <%= ENV['BOOK_TRACKER_DEVELOPMENT_S3_ENDPOINT'] %>
+  :s3_bucket:         <%= ENV['BOOK_TRACKER_DEVELOPMENT_S3_BUCKET'] %>
+  :s3_key_prefix:     <%= ENV['BOOK_TRACKER_DEVELOPMENT_S3_KEY_PREFIX'] %>
 
 test:
-  :import_path: <%= ENV['BOOK_TRACKER_IMPORT_PATH'] %>
-  :library_nuc_code: UIU
+  :aws_access_key_id: <%= ENV['BOOK_TRACKER_TEST_AWS_ACCESS_KEY_ID'] %>
+  :aws_secret_key:    <%= ENV['BOOK_TRACKER_TEST_AWS_SECRET_KEY'] %>
+  :aws_region:        <%= ENV['BOOK_TRACKER_TEST_AWS_REGION'] %>
+  :library_nuc_code:  UIU
+  :s3_endpoint:       <%= ENV['BOOK_TRACKER_TEST_S3_ENDPOINT'] %>
+  :s3_bucket:         <%= ENV['BOOK_TRACKER_TEST_S3_BUCKET'] %>
+  :s3_key_prefix:     <%= ENV['BOOK_TRACKER_TEST_S3_KEY_PREFIX'] %>
 
 production:
-  :import_path: <%= ENV['BOOK_TRACKER_IMPORT_PATH'] %>
-  :library_nuc_code: UIU
-
+  :aws_access_key_id: <%= ENV['BOOK_TRACKER_PRODUCTION_AWS_ACCESS_KEY_ID'] %>
+  :aws_secret_key:    <%= ENV['BOOK_TRACKER_PRODUCTION_AWS_SECRET_KEY'] %>
+  :aws_region:        <%= ENV['BOOK_TRACKER_PRODUCTION_AWS_REGION'] %>
+  :library_nuc_code:  UIU
+  :s3_endpoint:       <%= ENV['BOOK_TRACKER_PRODUCTION_S3_ENDPOINT'] %>
+  :s3_bucket:         <%= ENV['BOOK_TRACKER_PRODUCTION_S3_BUCKET'] %>
+  :s3_key_prefix:     <%= ENV['BOOK_TRACKER_PRODUCTION_S3_KEY_PREFIX'] %>

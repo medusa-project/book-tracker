@@ -21,7 +21,7 @@ class ImportJob < Struct.new(:a)
   end
 
   def perform
-    Filesystem.new.import
+    RecordSource.new.import
   end
 
   ##

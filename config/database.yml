@@ -7,11 +7,11 @@ default: &default
 
 development:
   <<: *default
-  database: <%= ENV['BOOK_TRACKER_DEV_DB_NAME'] %>
-  username: <%= ENV['BOOK_TRACKER_DEV_DB_USERNAME'] %>
-  password: <%= ENV['BOOK_TRACKER_DEV_DB_PASSWORD'] %>
-  host: <%= ENV['BOOK_TRACKER_DEV_DB_HOSTNAME'] %>
-  port: <%= ENV['BOOK_TRACKER_DEV_DB_PORT'] %>
+  database: <%= ENV['BOOK_TRACKER_DEVELOPMENT_DB_NAME'] %>
+  username: <%= ENV['BOOK_TRACKER_DEVELOPMENT_DB_USERNAME'] %>
+  password: <%= ENV['BOOK_TRACKER_DEVELOPMENT_DB_PASSWORD'] %>
+  host: <%= ENV['BOOK_TRACKER_DEVELOPMENT_DB_HOSTNAME'] %>
+  port: <%= ENV['BOOK_TRACKER_DEVELOPMENT_DB_PORT'] %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
