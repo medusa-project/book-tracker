@@ -1,0 +1,12 @@
+development: &development
+  :import_path: <%= ENV['BOOK_TRACKER_IMPORT_PATH'] %>
+  :library_nuc_code: UIU
+
+test:
+  :import_path: <%= ENV['BOOK_TRACKER_IMPORT_PATH'] %>
+  :library_nuc_code: UIU
+
+production:
+  :import_path: <%= ENV['BOOK_TRACKER_IMPORT_PATH'] %>
+  :library_nuc_code: UIU
+

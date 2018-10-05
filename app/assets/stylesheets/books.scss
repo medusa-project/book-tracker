@@ -1,0 +1,35 @@
+.book-tracker-checks {
+  th, td {
+    text-align: center;
+    width:25%;
+  }
+}
+
+#book-tracker-ingest-panel {
+  overflow-x: scroll;
+}
+
+form.book-tracker-search {
+  table {
+    td, th {
+      border: 0;
+    }
+    td {
+      text-align:center;
+    }
+    td:last-child {
+      text-align: left;
+      width:5em;
+    }
+    th {
+      text-align:right;
+      width:5em;
+    }
+  }
+  textarea {
+    margin:0 0 1em 0;
+  }
+  button.mbt-clear, input[type=submit] {
+    margin-bottom:1em;
+  }
+}

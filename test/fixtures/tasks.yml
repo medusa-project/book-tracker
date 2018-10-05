@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  service: 9.99
+  status: 9.99
+  percent_complete: 1.5
+  completed_at: 2018-10-04 13:01:05
+
+two:
+  name: MyString
+  service: 9.99
+  status: 9.99
+  percent_complete: 1.5
+  completed_at: 2018-10-04 13:01:05

@@ -1,0 +1,15 @@
+- if @books.any?
+  %table.table.table-striped
+    %thead
+      %tr
+        %th Bib ID
+        %th Object ID
+        %th Title
+        %th Volume
+        %th Author
+        %th Date
+        %th HathiTrust
+        %th Internet Archive
+        %th Corporate Partners
+    %tbody
+      = render partial: 'book_rows', locals: { next_page_url: @next_page_url }

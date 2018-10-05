@@ -1,0 +1,88 @@
+.page-header
+  %h1.title
+    Tasks
+
+.row
+  .col-sm-3
+    .card
+      .card-body
+        %h5.card-title Filesystem
+      %ul.list-group.list-group-flush
+        %li.list-group-item
+          %dl
+            %dt
+              Last import
+            %dd
+              - if @last_fs_import
+                - if @last_fs_import.completed_at
+                  = local_time_ago(@last_fs_import.completed_at)
+                - else
+                  In Progress
+              - else
+                Unknown
+      .card-body
+        = form_tag(import_path, method: 'post') do
+          = submit_tag('Import', class: 'btn btn-primary btn-xs')
+
+  .col-sm-3
+    .card
+      .card-body
+        %h5.card-title HathiTrust
+      %ul.list-group.list-group-flush
+        %li.list-group-item
+          %dl
+            %dt
+              Last check
+            %dd
+              - if @last_ht_check and @last_ht_check.completed_at
+                = local_time_ago(@last_ht_check.completed_at)
+              - else
+                Unknown
+      .card-body
+        = form_tag(check_hathitrust_path, method: 'post') do
+          = submit_tag('Check', class: 'btn btn-primary btn-xs')
+
+  .col-sm-3
+    .card
+      .card-body
+        %h5.card-title Internet Archive
+      %ul.list-group.list-group-flush
+        %li.list-group-item
+          %dl
+            %dt
+              Last check
+            %dd
+              - if @last_ia_check and @last_ia_check.completed_at
+                = local_time_ago(@last_ia_check.completed_at)
+              - else
+                Unknown
+      .card-body
+        = form_tag(check_internet_archive_path, method: 'post') do
+          = submit_tag('Check', class: 'btn btn-primary btn-xs')
+
+  .col-sm-3
+    .card
+      .card-body
+        %h5.card-title Google
+      %ul.list-group.list-group-flush
+        %li.list-group-item
+          %dl
+            %dt
+              Last check
+            %dd
+              - if @last_gb_check and @last_gb_check.completed_at
+                = local_time_ago(@last_gb_check.completed_at)
+              - else
+                Unknown
+      .card-body
+        %button.btn.btn-primary.btn-xs{ 'data-target': '#check-google-modal',
+                                        'data-toggle': 'modal',
+                                        type: 'button' }
+          Check
+
+%input{type: 'hidden', name: 'auto-update-frequency', value: '4000'}
+
+#tasks_list
+  = render partial: 'tasks'
+
+= render partial: 'check_google_panel'

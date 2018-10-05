@@ -1,24 +1,77 @@
-# README
+This is a basic getting-started guide for developers.
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+# Quick Links
 
-Things you may want to cover:
+* [JIRA board](https://bugs.library.illinois.edu/projects/MBT)
 
-* Ruby version
+# Dependencies
 
-* System dependencies
+* PostgreSQL 9.x
 
-* Configuration
+# Installation
 
-* Database creation
+## 1) Install RVM:
 
-* Database initialization
+`$ \curl -sSL https://get.rvm.io | bash -s stable`
 
-* How to run the test suite
+`$ source ~/.bash_profile`
 
-* Services (job queues, cache servers, search engines, etc.)
+## 2) Clone the repository:
 
-* Deployment instructions
+```
+$ git clone https://github.com/medusa-project/book-tracker.git
+$ cd book-tracker
+```
 
-* ...
+## 3) Install Ruby
+
+`$ rvm install "$(< .ruby-version)" --autolibs=0`
+
+## 4) Install Bundler
+
+`$ gem install bundler`
+
+## 5) Install the gems needed by the application:
+
+`$ bundle install`
+
+## 6) Configure the application
+
+Open `config/book_tracker.yml` and `config/database.yml` and add the environment
+variables referenced within to your environment.
+
+## 7) Create and seed the database
+
+`$ bin/rails db:setup`
+
+# Upgrading
+
+## Migrating the database schema
+
+`bin/rails db:migrate`
+
+# Usage
+
+## Importing books
+
+Use the web interface at `/tasks`, or, from the command line:
+
+`$ bin/rails books:import`
+
+## Checking services
+
+Use the web interface at `/tasks`, or, from the command line:
+
+```
+$ bin/rails books:check_google
+$ bin/rails books:check_hathitrust
+$ bin/rails books:check_internet_archive
+```
+
+# Notes
+
+## Using Shibboleth locally
+
+Log in as:
+* `admin`/`admin@example.org` for admin privileges
+* `user`/`user@example.org` for normal-user privileges

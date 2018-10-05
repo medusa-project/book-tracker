@@ -1,0 +1,33 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  bib_id: 1
+  oclc_number: MyString
+  obj_id: MyString
+  title: MyString
+  author: MyString
+  volume: MyString
+  date: MyString
+  exists_in_hathitrust: false
+  ia_identifier: MyString
+  exists_in_internet_archive: false
+  raw_marcxml: MyText
+  exists_in_google: false
+  source_path: MyString
+  hathitrust_rights: MyString
+
+two:
+  bib_id: 1
+  oclc_number: MyString
+  obj_id: MyString
+  title: MyString
+  author: MyString
+  volume: MyString
+  date: MyString
+  exists_in_hathitrust: false
+  ia_identifier: MyString
+  exists_in_internet_archive: false
+  raw_marcxml: MyText
+  exists_in_google: false
+  source_path: MyString
+  hathitrust_rights: MyString

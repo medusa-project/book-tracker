@@ -1,0 +1,12 @@
+- @books.each do |book|
+  %tr
+    %td= link_to(book.bib_id, book)
+    %td= book.obj_id
+    %td= link_to(book.title, book)
+    %td= book.volume
+    %td= book.author
+    %td= book.date
+    %td= book.exists_in_hathitrust? ? link_to(raw('&check;'), book.hathitrust_handle, target: 'blank') : ''
+    %td= book.exists_in_internet_archive? ? link_to(raw('&check;'), book.internet_archive_url, target: 'blank') : ''
+    %td= book.exists_in_google? ? raw('&check;') : ''
+    %input{type: 'hidden', name: 'next-page-url', value: "#{next_page_url}"}
