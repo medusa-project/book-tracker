@@ -1,6 +1,6 @@
 class TasksController < ApplicationController
 
-  TEMP_DIR = Rails.root.join('public', 'system', 'book_tracker')
+  TEMP_DIR = Rails.root.join('tmp')
 
   before_action :require_admin
   before_action :service_check_in_progress, except: :index

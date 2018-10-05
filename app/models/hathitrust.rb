@@ -4,6 +4,8 @@
 #
 class Hathitrust
 
+  TEMP_DIR = Rails.root.join('tmp')
+
   def self.check_in_progress?
     Task.where(service: Service::HATHITRUST).
         where('status NOT IN (?)', [Status::SUCCEEDED, Status::FAILED]).
@@ -23,6 +25,7 @@ class Hathitrust
                         service: Service::HATHITRUST)
     puts task.name
 
+    pathname = nil
     begin
       pathname = get_hathifile(task)
       nuc_code = Configuration.instance.library_nuc_code
@@ -73,6 +76,8 @@ class Hathitrust
       task.status = Status::SUCCEEDED
       task.save!
       puts task.name
+    ensure
+      FileUtils.rm(pathname, force: true) if pathname.present?
     end
   end
 
@@ -101,16 +106,15 @@ class Hathitrust
     uri = node['href']
     gz_filename = node.text
     txt_filename = gz_filename.chomp('.gz')
-    cache_pathname = Rails.root.join('public', 'system', 'book_tracker')
-    gz_pathname = File.join(cache_pathname, gz_filename)
-    txt_pathname = File.join(cache_pathname, txt_filename)
+    gz_pathname = File.join(TEMP_DIR, gz_filename)
+    txt_pathname = File.join(TEMP_DIR, txt_filename)
 
     # If we already have it, return its pathname instead of downloading it.
     return txt_pathname if File.exists?(txt_pathname)
 
     # Otherwise, delete any older HathiFiles that may exist, as they are now
     # out-of-date
-    Dir.glob(File.join(cache_pathname, 'hathi_full_*.txt')).
+    Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
         each { |f| File.delete(f) }
 
     # And progressively download the new one (because it's big)
@@ -119,7 +123,7 @@ class Hathitrust
     task.save!
     puts task.name
 
-    FileUtils::mkdir_p(cache_pathname)
+    FileUtils::mkdir_p(TEMP_DIR)
     Net::HTTP.get_response(URI.parse(uri)) do |res|
       res.read_body do |chunk|
         File.open(gz_pathname, 'ab') { |file|

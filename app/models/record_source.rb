@@ -47,8 +47,6 @@ class RecordSource
             next_marker: next_marker
         })
 
-        break unless list_response.is_truncated
-
         next_marker = list_response.next_marker
 
         list_response.contents.each do |object|
@@ -85,6 +83,8 @@ class RecordSource
             puts "#{object}: #{e}"
           end
         end
+
+        break unless list_response.is_truncated
       end
     rescue SystemExit, Interrupt => e
       task.update(name: "Import failed: #{e}", status: Status::FAILED)
@@ -93,6 +93,7 @@ class RecordSource
     rescue => e
       task.update(name: "Import failed: #{e}", status: Status::FAILED)
       puts task.name
+      puts e.backtrace
     else
       task.name += ": #{num_inserted} records added; #{num_updated} "\
       "records updated or unchanged; #{num_invalid_files} skipped files"

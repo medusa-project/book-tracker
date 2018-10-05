@@ -74,7 +74,7 @@ class InternetArchive
   #
   def get_api_results(task)
     expected_filename = "ia_results_#{Date.today.strftime('%Y%m%d')}.xml"
-    cache_pathname = Rails.root.join('public', 'system', 'book_tracker')
+    cache_pathname = Rails.root.join('tmp')
     expected_pathname = File.join(cache_pathname, expected_filename)
 
     unless File.exists?(expected_pathname)
