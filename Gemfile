@@ -11,7 +11,7 @@ gem 'haml-rails'
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
 gem 'local_time'
-# gem 'mini_racer', platforms: :ruby
+gem 'mini_racer', platforms: :ruby
 gem 'pg'
 gem 'puma', '~> 3.11'
 gem 'rails', '~> 5.2.1'

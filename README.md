@@ -1,6 +1,13 @@
-This is a basic getting-started guide for developers.
+The Book Tracker scans an S3 bucket for MARCXML files, reads and parses each
+one, and stores the results in a database table. Several asynchronous tasks
+iterate over the database rows and check various external services (HathiTrust,
+Internet Archive, etc.) for matching records, updating the database with their
+findings.
 
-# Quick Links
+This is a Rails application. `rails server` runs the web application, and
+various rake tasks run the tasks.
+
+# Quick links
 
 * [JIRA board](https://bugs.library.illinois.edu/projects/MBT)
 
@@ -8,7 +15,7 @@ This is a basic getting-started guide for developers.
 
 * PostgreSQL 9.x
 
-# Installation
+# Preparing a development environment
 
 ## 1) Install RVM:
 
@@ -37,8 +44,8 @@ $ cd book-tracker
 
 ## 6) Configure the application
 
-Open `config/book_tracker.yml` and `config/database.yml` and add the environment
-variables referenced within to your environment.
+Open `config/book_tracker.yml` and `config/database.yml` and add the
+environment variables referenced within to your environment.
 
 ## 7) Create and seed the database
 
@@ -46,27 +53,64 @@ variables referenced within to your environment.
 
 # Upgrading
 
-## Migrating the database schema
-
 `bin/rails db:migrate`
 
 # Usage
 
 ## Importing books
 
-Use the web interface at `/tasks`, or, from the command line:
+In development, run an import task from the command line:
 
 `$ bin/rails books:import`
 
+In production, the buttons in the web interface at `/tasks` will send a request
+to the ECS API to start a task (container, more or less) that invokes the above
+command and then exits.
+
 ## Checking services
 
-Use the web interface at `/tasks`, or, from the command line:
+In development, run an import task from the command line:
 
 ```
 $ bin/rails books:check_google
 $ bin/rails books:check_hathitrust
 $ bin/rails books:check_internet_archive
 ```
+
+Same idea as "importing books" in production.
+
+# Docker
+
+## Locally
+
+Fill in `env.list`. Then, build the container:
+
+`./docker-build.sh`
+
+And either run the server:
+
+`./docker-run-server.sh`
+
+Or a task (see `bin/rails -T` for a list):
+
+`./docker-run-task.sh books:import`
+
+## In production
+
+`env.list` is not used in production. Instead, its variables are added to the
+ECS task definition.
+
+Then, build the container:
+
+`./docker-build.sh`
+
+Push the image to ECR:
+
+`./ecr-push.sh`
+
+Run it:
+
+`./ecs-deploy.sh`
 
 # Notes
 
