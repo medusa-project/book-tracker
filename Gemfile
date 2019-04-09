@@ -14,7 +14,7 @@ gem 'local_time'
 gem 'mini_racer', platforms: :ruby
 gem 'pg'
 gem 'puma'
-gem 'rails', '~> 5.2.1'
+gem 'rails', '~> 5.2.3'
 gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '>= 1.3.0'
 gem 'will_paginate'
