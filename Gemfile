@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.5.1'
+ruby '2.6.2'
 
 gem 'aws-sdk-s3'
 gem 'bootstrap', '~> 4.1'
@@ -13,7 +13,7 @@ gem 'jquery-rails'
 gem 'local_time'
 gem 'mini_racer', platforms: :ruby
 gem 'pg'
-gem 'puma', '~> 3.11'
+gem 'puma'
 gem 'rails', '~> 5.2.1'
 gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '>= 1.3.0'
