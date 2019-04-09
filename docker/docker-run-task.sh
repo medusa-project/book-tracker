@@ -6,7 +6,7 @@ then
     exit 1
 fi
 
-source ./env.sh
+source docker/env.sh
 
 docker run \
     --env-file env.list \

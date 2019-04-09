@@ -5,12 +5,12 @@
 # insert them into the task pool, and remove the old ones.
 #
 
-source ./env.sh
+source docker/env.sh
 
 aws ecs update-service \
     --profile $AWS_PROFILE \
     --region $AWS_REGION \
     --cluster $ECS_CLUSTER \
     --service $ECS_SERVICE \
-    --desired-count $TASK_COUNT \
-    --force-new-deployment \
+    --desired-count $ECS_WEBAPP_TASK_COUNT \
+    --force-new-deployment
