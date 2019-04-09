@@ -133,6 +133,8 @@ class BooksController < ApplicationController
     @allowed_params.permit!
     @next_page_url = books_path(@allowed_params.merge(page: next_page))
 
+    @count = @books.count
+
     if request.xhr?
       @books = @books.paginate(page: page, per_page: RESULTS_LIMIT)
       render partial: 'book_rows', locals: { books: @books,
@@ -146,7 +148,7 @@ class BooksController < ApplicationController
           @books = @books.paginate(page: page, per_page: RESULTS_LIMIT)
           @books.each{ |book| book.url = url_for(book) }
           render json: {
-              numResults: @books.total_entries,
+              numResults: @count,
               windowSize: RESULTS_LIMIT,
               windowOffset: (page - 1) * RESULTS_LIMIT,
               results: @books

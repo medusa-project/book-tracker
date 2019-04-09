@@ -78,7 +78,7 @@
 .row
   .col-sm-8
     %h4
-      = pluralize(@books.total_entries, 'book', 'books')
+      = pluralize(@count, 'book', 'books')
       - if @missing_ids.any?
         = link_to("#{@missing_ids.length} IDs not found", '#',
         id: 'book-tracker-ids-not-found',
@@ -94,7 +94,7 @@
         = link_to('CSV', @allowed_params.merge(format: 'csv'), class: 'dropdown-item', type: 'button')
         = link_to('MARCXML', @allowed_params.merge(format: 'xml'), class: 'dropdown-item', type: 'button')
 
-%input{type: 'hidden', name: 'num_results', value: "#{@books.total_entries}"}
+%input{type: 'hidden', name: 'num_results', value: "#{@count}"}
 
 #items_list
   = render partial: 'books', locals: { books: @books, next_page_url: @next_page_url }
