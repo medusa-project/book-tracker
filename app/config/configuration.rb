@@ -10,18 +10,11 @@ class Configuration
 
   include Singleton
 
-  def initialize
-    @config = YAML.load(
-        ERB.new(
-            File.read(
-                File.join(Rails.root, 'config', 'book_tracker.yml'))).result)[Rails.env]
-  end
-
   ##
   # @return [Object]
   #
   def get(key)
-    @config[key.to_sym]
+    Rails.application.credentials.dig(Rails.env.to_sym, key.to_sym)
   end
 
   def method_missing(m, *args, &block)

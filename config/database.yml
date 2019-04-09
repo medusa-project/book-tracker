@@ -1,33 +1,33 @@
 default: &default
-  adapter: postgresql
+  adapter:  postgresql
   encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  timeout: 5000
+  pool:     <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  timeout:  5000
   template: template0
 
 development:
   <<: *default
-  database: <%= ENV['BOOK_TRACKER_DEVELOPMENT_DB_NAME'] %>
-  username: <%= ENV['BOOK_TRACKER_DEVELOPMENT_DB_USERNAME'] %>
-  password: <%= ENV['BOOK_TRACKER_DEVELOPMENT_DB_PASSWORD'] %>
-  host: <%= ENV['BOOK_TRACKER_DEVELOPMENT_DB_HOSTNAME'] %>
-  port: <%= ENV['BOOK_TRACKER_DEVELOPMENT_DB_PORT'] %>
+  host:     <%= Rails.application.credentials.dig(:development, :db_host) %>
+  port:     <%= Rails.application.credentials.dig(:development, :db_port) %>
+  database: <%= Rails.application.credentials.dig(:development, :db_database) %>
+  username: <%= Rails.application.credentials.dig(:development, :db_username) %>
+  password: <%= Rails.application.credentials.dig(:development, :db_password) %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: <%= ENV['BOOK_TRACKER_TEST_DB_NAME'] %>
-  username: <%= ENV['BOOK_TRACKER_TEST_DB_USERNAME'] %>
-  password: <%= ENV['BOOK_TRACKER_TEST_DB_PASSWORD'] %>
-  host: <%= ENV['BOOK_TRACKER_TEST_DB_HOSTNAME'] %>
-  port: <%= ENV['BOOK_TRACKER_TEST_DB_PORT'] %>
+  host:     <%= Rails.application.credentials.dig(:test, :db_host) %>
+  port:     <%= Rails.application.credentials.dig(:test, :db_port) %>
+  database: <%= Rails.application.credentials.dig(:test, :db_database) %>
+  username: <%= Rails.application.credentials.dig(:test, :db_username) %>
+  password: <%= Rails.application.credentials.dig(:test, :db_password) %>
 
 production:
   <<: *default
-  host: <%= ENV['RDS_HOST'] %>
-  port: <%= ENV['RDS_PORT'] %>
-  database: <%= ENV['RDS_DB_NAME'] %>
-  username: <%= ENV['RDS_USERNAME'] %>
-  password: <%= ENV['RDS_PASSWORD'] %>
+  host:     <%= Rails.application.credentials.dig(:production, :db_host) %>
+  port:     <%= Rails.application.credentials.dig(:production, :db_port) %>
+  database: <%= Rails.application.credentials.dig(:production, :db_database) %>
+  username: <%= Rails.application.credentials.dig(:production, :db_username) %>
+  password: <%= Rails.application.credentials.dig(:production, :db_password) %>
