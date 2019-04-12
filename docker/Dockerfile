@@ -1,4 +1,4 @@
-# This must match the Ruby version in the Gemfile.
+# N.B.: this must match the Ruby version in the Gemfile, and /.ruby-version.
 FROM ruby:2.6.2
 
 ENV RAILS_ENV=production

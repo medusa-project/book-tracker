@@ -15,61 +15,55 @@ various rake tasks run the tasks.
 
 * PostgreSQL 9.x
 
-# Preparing a development environment
+# Development
 
-## 1) Install RVM:
-
-`$ \curl -sSL https://get.rvm.io | bash -s stable`
-
-`$ source ~/.bash_profile`
-
-## 2) Clone the repository:
+## Prepare a development environment
 
 ```
+# Install RVM
+$ \curl -sSL https://get.rvm.io | bash -s stable
+$ source ~/.bash_profile
+
+# Clone the repository
 $ git clone https://github.com/medusa-project/book-tracker.git
 $ cd book-tracker
+
+# Install Ruby into RVM
+# (Note: `.ruby-version` is used by RVM, but RVM isn't used in Docker, so the
+# version it contains must be kept in sync with the one used in the Dockerfile.)
+$ rvm install "$(< .ruby-version)" --autolibs=0
+
+# Install Bundler
+$ gem install bundler
+
+# Install the gems needed by the application
+$ bundle install
+
+# Configure the application
+# After acquiring config/master.key from someone on the project team:
+$ bin/rails credentials:edit
+
+# Create and seed the database
+$ bin/rails db:setup
+
+# Add a user
+$ bin/rails users:create <username>
+
+# Start the server
+$ bin/rails server
 ```
 
-## 3) Install Ruby
+## Sign in
 
-`$ rvm install "$(< .ruby-version)" --autolibs=0`
+Navigate to `/signin` and log in as the user you created.
 
-## 4) Install Bundler
+## Import books
 
-`$ gem install bundler`
+```
+$ bin/rails books:import
+```
 
-## 5) Install the gems needed by the application:
-
-`$ bundle install`
-
-## 6) Configure the application
-
-Open `config/book_tracker.yml` and `config/database.yml` and add the
-environment variables referenced within to your environment.
-
-## 7) Create and seed the database
-
-`$ bin/rails db:setup`
-
-# Upgrading
-
-`bin/rails db:migrate`
-
-# Usage
-
-## Importing books
-
-In development, run an import task from the command line:
-
-`$ bin/rails books:import`
-
-In production, the buttons in the web interface at `/tasks` will send a request
-to the ECS API to start a task (container, more or less) that invokes the above
-command and then exits.
-
-## Checking services
-
-In development, run an import task from the command line:
+## Check services
 
 ```
 $ bin/rails books:check_google
@@ -77,25 +71,12 @@ $ bin/rails books:check_hathitrust
 $ bin/rails books:check_internet_archive
 ```
 
-Same idea as "importing books" in production.
+# Production
 
-# Docker
+The task definition must contain the following environment variables:
 
-## Locally
-
-Fill in `env.list`. Then, build the container:
-
-`./docker-build.sh`
-
-And either run the server:
-
-`./docker-run-server.sh`
-
-Or a task (see `bin/rails -T` for a list):
-
-`./docker-run-task.sh books:import`
-
-## In production
+* `SHIBBOLETH_HOST`
+* `MASTER_KEY` (optional alternative to `config/master.key`)
 
 `env.list` is not used in production. Instead, its variables are added to the
 ECS task definition.
@@ -112,10 +93,36 @@ Run it:
 
 `./ecs-deploy.sh`
 
-# Notes
 
-## Using Shibboleth locally
+## Import books & check tasks
 
-Log in as:
-* `admin`/`admin@example.org` for admin privileges
-* `user`/`user@example.org` for normal-user privileges
+The buttons in the web interface at `/tasks` send requests to the ECS API
+to start tasks (containers, more or less) that invoke these various commands
+and then exit.
+
+
+
+
+
+
+
+
+
+
+
+
+# Docker
+
+## Locally
+
+Fill in `env.list`. Then, build the container:
+
+`./docker-build.sh`
+
+And either run the server:
+
+`./docker-run-server.sh`
+
+Or a task (see `bin/rails -T` for a list):
+
+`./docker-run-task.sh books:import`
