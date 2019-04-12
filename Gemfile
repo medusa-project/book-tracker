@@ -12,6 +12,8 @@ gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
 gem 'local_time'
 gem 'mini_racer', platforms: :ruby
+gem 'omniauth'
+gem 'omniauth-shibboleth'
 gem 'pg'
 gem 'puma'
 gem 'rails', '~> 5.2.3'
