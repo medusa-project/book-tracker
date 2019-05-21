@@ -6,7 +6,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
             File.read(
                 File.join(Rails.root, 'config', 'shibboleth.yml'))).result)[Rails.env]
     provider :shibboleth, opts.symbolize_keys
-    Metaslurp::Application.shibboleth_host = opts['host']
+    BookTracker::Application.shibboleth_host = opts['host']
   else
     provider :developer
   end
