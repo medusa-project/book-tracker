@@ -1,6 +1,6 @@
 # We need a config/shibboleth.yml file with the options
 Rails.application.config.middleware.use OmniAuth::Builder do
-  if Rails.env.production?
+  if Rails.env.production? or Rails.env.demo?
     opts = YAML.load(
         ERB.new(
             File.read(

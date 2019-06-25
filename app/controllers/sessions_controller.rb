@@ -35,7 +35,7 @@ class SessionsController < ApplicationController
   #
   def new
     session[:referer] = request.env['HTTP_REFERER']
-    if Rails.env.production?
+    if Rails.env.production? or Rails.env.demo?
       redirect_to(shibboleth_login_path(BookTracker::Application.shibboleth_host))
     else
       redirect_to('/auth/developer')

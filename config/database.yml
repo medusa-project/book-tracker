@@ -11,7 +11,7 @@ development:
   port:     <%= Rails.application.credentials.dig(:development, :db_port) %>
   database: <%= Rails.application.credentials.dig(:development, :db_database) %>
   username: <%= Rails.application.credentials.dig(:development, :db_username) %>
-  password: <%= Rails.application.credentials.dig(:development, :db_password) %>
+  password: "<%= Rails.application.credentials.dig(:development, :db_password) %>"
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -22,7 +22,15 @@ test:
   port:     <%= Rails.application.credentials.dig(:test, :db_port) %>
   database: <%= Rails.application.credentials.dig(:test, :db_database) %>
   username: <%= Rails.application.credentials.dig(:test, :db_username) %>
-  password: <%= Rails.application.credentials.dig(:test, :db_password) %>
+  password: "<%= Rails.application.credentials.dig(:test, :db_password) %>"
+
+demo:
+  <<: *default
+  host:     <%= Rails.application.credentials.dig(:demo, :db_host) %>
+  port:     <%= Rails.application.credentials.dig(:demo, :db_port) %>
+  database: <%= Rails.application.credentials.dig(:demo, :db_database) %>
+  username: <%= Rails.application.credentials.dig(:demo, :db_username) %>
+  password: "<%= Rails.application.credentials.dig(:demo, :db_password) %>"
 
 production:
   <<: *default
@@ -30,4 +38,4 @@ production:
   port:     <%= Rails.application.credentials.dig(:production, :db_port) %>
   database: <%= Rails.application.credentials.dig(:production, :db_database) %>
   username: <%= Rails.application.credentials.dig(:production, :db_username) %>
-  password: <%= Rails.application.credentials.dig(:production, :db_password) %>
+  password: "<%= Rails.application.credentials.dig(:production, :db_password) %>"
