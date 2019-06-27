@@ -1,4 +1,4 @@
-production:
+default: &default
   host: <%= ENV['SHIBBOLETH_HOST'] %>
   uid_field: eppn
   extra_fields:
@@ -14,3 +14,9 @@ production:
   request_type: header
   info_fields:
     email: mail
+
+demo:
+  <<: *default
+
+production:
+  <<: *default
