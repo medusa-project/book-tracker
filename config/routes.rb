@@ -20,4 +20,7 @@ Rails.application.routes.draw do
 
   match '/', to: redirect('/books'), via: :get
 
+  # Dedicated health check URL because `/` returns 3xx
+  match '/health', to: 'health#check', via: :get
+
 end
