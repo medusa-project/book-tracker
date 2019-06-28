@@ -2,6 +2,11 @@ class ApplicationController < ActionController::Base
 
   include SessionsHelper
 
+  def handle_error(e)
+    Rails.logger.error("#{e}\n#{e.backtrace.join("\n ")}")
+    flash['error'] = "#{e}"
+  end
+
   def signed_in_user
     unless signed_in?
       store_location
