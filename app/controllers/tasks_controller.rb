@@ -2,7 +2,7 @@ class TasksController < ApplicationController
 
   TEMP_DIR = Rails.root.join('tmp')
 
-  before_action :require_admin
+  before_action :signed_in_user
   before_action :service_check_in_progress, except: :index
 
   ##
@@ -91,10 +91,6 @@ class TasksController < ApplicationController
   end
 
   private
-
-  def require_admin
-    #authorize! :update, Book TODO: fix this
-  end
 
   def service_check_in_progress
     if Service::check_in_progress?
