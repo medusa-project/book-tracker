@@ -18,7 +18,7 @@ Rails.application.routes.draw do
         via: :post, as: 'check_internet_archive'
   match 'import', to: 'tasks#import', via: :post
 
-  match '/', to: redirect('/books'), via: :get
+  match '/', to: redirect('/books'), via: :get, as: 'root'
 
   # Dedicated health check URL because `/` returns 3xx
   match '/health', to: 'health#check', via: :get
