@@ -85,7 +85,46 @@ class Google
       task.status = Status::SUCCEEDED
       task.save!
       puts task.name
+    ensure
+      File.delete(@inventory_pathname) rescue nil
     end
+  end
+
+  ##
+  # Invokes a rake task via an ECS task to check the service.
+  #
+  # @return [void]
+  #
+  def check_async
+    unless Rails.env.production? or Rails.env.demo?
+      raise 'This feature only works in production. '\
+          'Elsewhere, use a rake task instead.'
+    end
+
+    # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
+    config = Configuration.instance
+    ecs = Aws::ECS::Client.new(region: config.aws_region)
+    args = {
+        cluster: config.ecs_cluster,
+        task_definition: config.ecs_async_task_definition,
+        launch_type: 'FARGATE',
+        overrides: {
+            container_overrides: [
+                {
+                    name: 'book-tracker-async-task',
+                    command: ['bin/rails', 'books:check_google']
+                },
+            ]
+        },
+        network_configuration: {
+            awsvpc_configuration: {
+                subnets: [config.ecs_subnet],
+                security_groups: [config.ecs_security_group],
+                assign_public_ip: 'ENABLED'
+            },
+        }
+    }
+    ecs.run_task(args)
   end
 
 end

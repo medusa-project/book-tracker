@@ -18,7 +18,7 @@ class RecordSource
   # See: https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/S3/Client.html
   #
   def import
-    if RecordSource.import_in_progress? or Service.check_in_progress?
+    if Service.check_in_progress?
       raise 'Cannot import while another import or service check is in progress.'
     end
 
@@ -102,6 +102,43 @@ class RecordSource
       task.save!
       puts task.name
     end
+  end
+
+  ##
+  # Invokes a rake task via an ECS task to import records.
+  #
+  # @return [void]
+  #
+  def import_async
+    unless Rails.env.production? or Rails.env.demo?
+      raise 'This feature only works in production. '\
+          'Elsewhere, use a rake task instead.'
+    end
+
+    # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
+    config = Configuration.instance
+    ecs = Aws::ECS::Client.new(region: config.aws_region)
+    args = {
+        cluster: config.ecs_cluster,
+        task_definition: config.ecs_async_task_definition,
+        launch_type: 'FARGATE',
+        overrides: {
+            container_overrides: [
+                {
+                    name: 'book-tracker-async-task',
+                    command: ['bin/rails', 'books:import']
+                },
+            ]
+        },
+        network_configuration: {
+            awsvpc_configuration: {
+                subnets: [config.ecs_subnet],
+                security_groups: [config.ecs_security_group],
+                assign_public_ip: 'ENABLED'
+            },
+        }
+    }
+    ecs.run_task(args)
   end
 
 end

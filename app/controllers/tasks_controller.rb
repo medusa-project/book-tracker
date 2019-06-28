@@ -18,11 +18,14 @@ class TasksController < ApplicationController
         file.write(uploaded_io.read)
       end
 
-      Delayed::Job.enqueue(GoogleJob.new(pathname))
+      Google.new(pathname).check_async
       flash['success'] = 'Google check will begin momentarily.'
     else
       flash['error'] = 'No file provided.'
     end
+  rescue => e
+    flash['error'] = "#{e}"
+  ensure
     redirect_back fallback_location: tasks_path
   end
 
@@ -30,8 +33,12 @@ class TasksController < ApplicationController
   # Responds to POST /check-hathitrust
   #
   def check_hathitrust
-    Delayed::Job.enqueue(HathitrustJob.new)
+    Hathitrust.new.check_async
+  rescue => e
+    flash['error'] = "#{e}"
+  else
     flash['success'] = 'HathiTrust check will begin momentarily.'
+  ensure
     redirect_back fallback_location: tasks_path
   end
 
@@ -39,8 +46,12 @@ class TasksController < ApplicationController
   # Responds to POST /check-internet-archive
   #
   def check_internet_archive
-    Delayed::Job.enqueue(InternetArchiveJob.new)
+    InternetArchive.new.check_async
+  rescue => e
+    flash['error'] = "#{e}"
+  else
     flash['success'] = 'Internet Archive check will begin momentarily.'
+  ensure
     redirect_back fallback_location: tasks_path
   end
 
@@ -48,8 +59,12 @@ class TasksController < ApplicationController
   # Responds to POST /import
   #
   def import
-    Delayed::Job.enqueue(ImportJob.new)
+    RecordSource.new.import_async
+  rescue => e
+    flash['error'] = "#{e}"
+  else
     flash['success'] = 'Import will begin momentarily.'
+  ensure
     redirect_back fallback_location: tasks_path
   end
 

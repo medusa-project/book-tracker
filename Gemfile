@@ -3,7 +3,8 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.6.2'
 
-gem 'aws-sdk-s3'
+gem 'aws-sdk-ecs', '~> 1' # used to invoke async tasks
+gem 'aws-sdk-s3', '~> 1'  # used to access the bucket containing MARCXML records
 gem 'bootstrap', '~> 4.1'
 gem 'csv_builder'
 gem 'haml'
