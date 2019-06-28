@@ -125,7 +125,7 @@ class RecordSource
         overrides: {
             container_overrides: [
                 {
-                    name: 'book-tracker-async-task',
+                    name: config.ecs_async_task_container,
                     command: ['bin/rails', 'books:import']
                 },
             ]
