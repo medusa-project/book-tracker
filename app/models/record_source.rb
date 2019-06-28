@@ -25,14 +25,19 @@ class RecordSource
     task = Task.create!(name: 'Importing MARCXML records',
                         service: Service::LOCAL_STORAGE)
 
-    config = Configuration.instance
-    client = Aws::S3::Client.new(endpoint: config.s3_endpoint,
-                                 region: config.aws_region,
-                                 force_path_style: true,
-                                 credentials: Aws::Credentials.new(config.aws_access_key_id,
-                                                                   config.aws_secret_key))
-
     begin
+      config = Configuration.instance
+      opts = {
+          region: config.aws_region,
+          force_path_style: true,
+          credentials: Aws::Credentials.new(config.aws_access_key_id,
+                                            config.aws_secret_access_key)
+      }
+      if Rails.env.development? or Rails.env.test?
+        opts[:endpoint] = config.s3_endpoint
+      end
+      client = Aws::S3::Client.new(opts)
+
       # Iterate through all 50,000+ files in the bucket, 1,000 at a time.
       num_inserted      = 0
       num_updated       = 0
