@@ -24,6 +24,7 @@ class TasksController < ApplicationController
       flash['error'] = 'No file provided.'
     end
   rescue => e
+    Rails.logger.error("#{e}")
     flash['error'] = "#{e}"
   ensure
     redirect_back fallback_location: tasks_path
@@ -35,6 +36,7 @@ class TasksController < ApplicationController
   def check_hathitrust
     Hathitrust.new.check_async
   rescue => e
+    Rails.logger.error("#{e}")
     flash['error'] = "#{e}"
   else
     flash['success'] = 'HathiTrust check will begin momentarily.'
@@ -48,6 +50,7 @@ class TasksController < ApplicationController
   def check_internet_archive
     InternetArchive.new.check_async
   rescue => e
+    Rails.logger.error("#{e}")
     flash['error'] = "#{e}"
   else
     flash['success'] = 'Internet Archive check will begin momentarily.'
@@ -61,6 +64,7 @@ class TasksController < ApplicationController
   def import
     RecordSource.new.import_async
   rescue => e
+    Rails.logger.error("#{e}")
     flash['error'] = "#{e}"
   else
     flash['success'] = 'Import will begin momentarily.'
