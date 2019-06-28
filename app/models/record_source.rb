@@ -7,8 +7,7 @@ class RecordSource
 
   def self.import_in_progress?
     Task.where(service: Service::LOCAL_STORAGE).
-        where('status NOT IN (?)', [Status::SUCCEEDED, Status::FAILED]).
-        limit(1).any?
+        where('status NOT IN (?)', [Status::SUCCEEDED, Status::FAILED]).count > 0
   end
 
   ##
@@ -35,10 +34,11 @@ class RecordSource
 
     begin
       # Iterate through all 50,000+ files in the bucket, 1,000 at a time.
-      num_inserted = 0
-      num_updated = 0
-      record_index = 0
-      next_marker = nil
+      num_inserted      = 0
+      num_updated       = 0
+      num_invalid_files = 0
+      record_index      = 0
+      next_marker       = nil
       loop do
         list_response = client.list_objects({
             bucket: config.s3_bucket,
@@ -53,7 +53,8 @@ class RecordSource
           next unless object.key.downcase.end_with?('.xml')
 
           get_response = client.get_object({
-              bucket: config.s3_bucket, key: object.key
+              bucket: config.s3_bucket,
+              key: object.key
           })
           data = get_response.body.read
 
