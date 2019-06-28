@@ -189,19 +189,4 @@ class BooksController < ApplicationController
     end
   end
 
-  private
-
-  ##
-  # Sends an Enumerable in chunks as an attachment. Streaming requires a
-  # web server capable of it (not WEBrick or Thin).
-  #
-  def stream(enumerable, filename, content_type)
-    self.response.headers['X-Accel-Buffering'] = 'no'
-    self.response.headers['Cache-Control'] ||= 'no-cache'
-    self.response.headers['Content-Disposition'] = "attachment; filename=#{filename}"
-    self.response.headers['Content-Type'] = content_type
-    self.response.headers.delete('Content-Length')
-    self.response_body = enumerable
-  end
-
 end
