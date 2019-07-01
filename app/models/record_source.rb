@@ -33,34 +33,21 @@ class RecordSource
           credentials: Aws::Credentials.new(config.aws_access_key_id,
                                             config.aws_secret_access_key)
       }
-      if Rails.env.development? or Rails.env.test?
-        opts[:endpoint] = config.s3_endpoint
-      end
+      opts[:endpoint] = config.s3_endpoint if config.s3_endpoint.present?
+
       client = Aws::S3::Client.new(opts)
 
-      # Iterate through all 50,000+ files in the bucket, 1,000 at a time.
-      num_inserted      = 0
-      num_updated       = 0
-      num_invalid_files = 0
-      record_index      = 0
-      next_marker       = nil
-      loop do
-        list_response = client.list_objects({
-            bucket: config.s3_bucket,
-            prefix: config.s3_key_prefix,
-            max_keys: 1000,
-            next_marker: next_marker
-        })
-
-        next_marker = list_response.next_marker
-
+      num_inserted = num_updated = num_invalid_files = file_index =
+          record_index = 0
+      client.list_objects(
+          bucket: config.s3_bucket,
+          prefix: config.s3_key_prefix).each do |list_response|
         list_response.contents.each do |object|
           next unless object.key.downcase.end_with?('.xml')
 
-          get_response = client.get_object({
+          get_response = client.get_object(
               bucket: config.s3_bucket,
-              key: object.key
-          })
+              key: object.key)
           data = get_response.body.read
 
           begin
@@ -69,7 +56,8 @@ class RecordSource
 
             doc.xpath('//marc:record', MARCXML_NAMESPACES).each do |record|
               book, status = Book.insert_or_update!(
-                  Book.params_from_marcxml_record(record), object.key)
+                  Book.params_from_marcxml_record(record),
+                  object.key)
               if status == Book::INSERTED
                 num_inserted += 1
               else
@@ -77,7 +65,9 @@ class RecordSource
               end
               record_index += 1
               if record_index % 1000 == 0
-                task.update(name: "Importing MARCXML records (#{record_index} read)")
+                task.update(name: "Importing MARCXML records: "\
+                    "scanned #{record_index} records in #{file_index + 1} files "\
+                    "(no progress available)")
                 print "#{task.name.ljust(80)}\r"
               end
             end
@@ -86,25 +76,27 @@ class RecordSource
             # it's either an invalid MARCXML file or, more likely, a non-
             # MARCXML XML file, which is fine.
             num_invalid_files += 1
-            puts "#{object}: #{e}"
+            Rails.logger.info("#{object}: #{e}")
+          ensure
+            file_index += 1
           end
         end
-
-        break unless list_response.is_truncated
       end
     rescue SystemExit, Interrupt => e
-      task.update(name: "Import failed: #{e}", status: Status::FAILED)
+      task.update(name: "Import failed: #{e}",
+                  status: Status::FAILED)
       puts task.name
       raise e
     rescue => e
-      task.update(name: "Import failed: #{e}", status: Status::FAILED)
+      task.update(name: "Import failed: #{e}",
+                  status: Status::FAILED)
       puts task.name
       puts e.backtrace
     else
-      task.name += ": #{num_inserted} records added; #{num_updated} "\
-      "records updated or unchanged; #{num_invalid_files} skipped files"
-      task.status = Status::SUCCEEDED
-      task.save!
+      task.update(name: sprintf('Importing MARCXML records: %d records added; %d '\
+                                'records updated or unchanged; %d skipped files',
+                                num_inserted, num_updated, num_invalid_files),
+                  status: Status::SUCCEEDED)
       puts task.name
     end
   end
