@@ -121,7 +121,7 @@ class Google
             container_overrides: [
                 {
                     name: config.ecs_async_task_container,
-                    command: ['bin/rails', 'books:check_google']
+                    command: ['bin/rails', "books:check_google[#{@inventory_key}]"]
                 },
             ]
         },
