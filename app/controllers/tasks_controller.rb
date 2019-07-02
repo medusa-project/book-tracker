@@ -11,14 +11,23 @@ class TasksController < ApplicationController
   def check_google
     uploaded_io = params[:file]
     if uploaded_io.respond_to?(:original_filename)
-      FileUtils.makedirs(TEMP_DIR)
-      pathname = File.join(TEMP_DIR, "google_books_#{SecureRandom.uuid}.txt")
+      # Store the uploaded file in an S3 bucket.
+      config = ::Configuration.instance
+      opts = {
+          region: config.aws_region,
+          force_path_style: true,
+          credentials: Aws::Credentials.new(config.aws_access_key_id,
+                                            config.aws_secret_access_key)
+      }
+      opts[:endpoint] = config.s3_endpoint if config.s3_endpoint.present?
 
-      File.open(pathname, 'wb') do |file|
-        file.write(uploaded_io.read)
-      end
+      client = Aws::S3::Client.new(opts)
+      s3 = Aws::S3::Resource.new(client: client)
+      key = sprintf('google_inventory_%d.txt', Time.now.to_i)
+      obj = s3.bucket(config.temp_bucket).object(key)
+      obj.put(body: uploaded_io)
 
-      Google.new(pathname).check_async
+      Google.new(key).check_async
       flash['success'] = 'Google check will begin momentarily.'
     else
       flash['error'] = 'No file provided.'

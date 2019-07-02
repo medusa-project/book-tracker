@@ -40,13 +40,13 @@ class RecordSource
       num_inserted = num_updated = num_invalid_files = file_index =
           record_index = 0
       client.list_objects(
-          bucket: config.s3_bucket,
+          bucket: config.book_bucket,
           prefix: config.s3_key_prefix).each do |list_response|
         list_response.contents.each do |object|
           next unless object.key.downcase.end_with?('.xml')
 
           get_response = client.get_object(
-              bucket: config.s3_bucket,
+              bucket: config.book_bucket,
               key: object.key)
           data = get_response.body.read
 

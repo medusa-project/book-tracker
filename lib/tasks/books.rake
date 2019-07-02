@@ -1,3 +1,7 @@
+##
+# N.B.: these tasks are invoked by the ECS API, not just on the console, so
+# changing their names requires updating those invocations.
+#
 namespace :books do
   desc 'Scans for MARCXML records to import, and imports them.'
   task import: :environment do
@@ -5,8 +9,8 @@ namespace :books do
   end
 
   desc 'Checks to see whether each book exists in Google.'
-  task check_google: :environment do
-    Google.new.check
+  task :check_google, [:key] => :environment do |task, args|
+    Google.new(args[:key]).check
   end
 
   desc 'Checks to see whether each book exists in HathiTrust.'

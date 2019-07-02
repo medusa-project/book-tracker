@@ -11,15 +11,15 @@ class Google
   def self.check_in_progress?
     Task.where(service: Service::GOOGLE).
         where('status NOT IN (?)', [Status::SUCCEEDED, Status::FAILED]).
-        limit(1).any?
+        count > 0
   end
 
   ##
-  # @param inventory_pathname [String] Pathname of a Google Books inventory
-  #                                    file.
+  # @param inventory_key [String] Object key of a Google Books inventory file
+  #                               in S3.
   #
-  def initialize(inventory_pathname)
-    @inventory_pathname = inventory_pathname
+  def initialize(inventory_key)
+    @inventory_key = inventory_key
   end
 
   def check
@@ -31,29 +31,37 @@ class Google
     task = Task.create!(name: 'Checking Google', service: Service::GOOGLE)
     puts task.name
 
+    bt_items_in_gb = new_bt_items_in_gb = num_skipped_lines = 0
+
+    config = Configuration.instance
+    opts = {
+        region: config.aws_region,
+        force_path_style: true,
+        credentials: Aws::Credentials.new(config.aws_access_key_id,
+                                          config.aws_secret_access_key)
+    }
+    opts[:endpoint] = config.s3_endpoint if config.s3_endpoint.present?
+    client = Aws::S3::Client.new(opts)
+
     begin
-      bt_items_in_gb = 0
-      new_bt_items_in_gb = 0
-      num_lines = 0
-      num_skipped_lines = 0
-
-      # Count the lines in order to display progress.
-      File.readlines(@inventory_pathname).each do
-        num_lines += 1;
-      end
-
-      # File columns: [0] barcode, [1] scanned date, [2] processed date,
-      # [3] analyzed date, [4] converted date, [5] downloaded date
+      response = client.get_object(bucket: config.temp_bucket,
+                                   key: @inventory_key)
+      # CSV columns:
+      # [0] barcode
+      # [1] scanned date
+      # [2] processed date
+      # [3] analyzed date
+      # [4] converted date
+      # [5] downloaded date
       # Date format: yyyy-mm-dd hh:mm
-      File.readlines(@inventory_pathname).each_with_index do |line, index|
+      response.body.each_line.with_index do |line, index|
         begin
-          parts = CSV.parse_line(line, { col_sep: "\t" })
+          parts = CSV.parse_line(line, col_sep: "\t")
           if parts.any?
             book = Book.find_by_obj_id(parts.first.strip)
             if book
               unless book.exists_in_google
-                book.exists_in_google = true
-                book.save!
+                book.update!(exists_in_google: true)
                 new_bt_items_in_gb += 1
               end
               bt_items_in_gb += 1
@@ -63,8 +71,8 @@ class Google
           num_skipped_lines += 1
         end
         if index % 1000 == 0
-          task.percent_complete = (index + 1).to_f / num_lines.to_f
-          task.save!
+          task.update(name: "Checking Google: scanned #{index} records "\
+                      "(no progress available)")
         end
       end
     rescue SystemExit, Interrupt => e
@@ -86,7 +94,8 @@ class Google
       task.save!
       puts task.name
     ensure
-      File.delete(@inventory_pathname) rescue nil
+      client.delete_object(bucket: config.temp_bucket,
+                           key: @inventory_key)
     end
   end
 
