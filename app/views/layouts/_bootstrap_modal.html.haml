@@ -2,6 +2,6 @@
 - id ||= nil
 - html_class ||= nil
 .modal.fade{id: id, tabindex: -1, role: 'dialog', class: html_class}
-  .modal-dialog
+  .modal-dialog{role: 'document'}
     .modal-content
       = yield

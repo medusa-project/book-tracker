@@ -103,13 +103,13 @@
 
 = render layout: 'layouts/bootstrap_modal', locals: {id: 'missing-ids-modal'} do
   .modal-header
+    %h5.modal-title
+      Missing IDs
     %button.close{ 'type' => 'button', 'data-dismiss' => 'modal' }
       %span{'aria-hidden' => 'true'}
         &times;
       %span.sr-only
         Close
-    %h4.modal-title
-      Missing IDs
   .modal-body
     %ul
       = raw(@missing_ids.uniq.map{ |id| "<li>#{id}</li>" }.join)
