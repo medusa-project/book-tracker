@@ -39,17 +39,17 @@ class BooksController < ApplicationController
       lines = query.strip.split("\n")
       # If >1 line, assume a list of bib and/or object IDs.
       if lines.length > 1
-        bib_ids = lines.select{ |id| id.length < 8 }.map{ |x| x.strip }
-        object_ids = lines.select{ |id| id.length > 8 }.map{ |x| x.strip[0..20] }
+        bib_ids    = lines.map(&:strip).select{ |id| id.length < 8 }
+        object_ids = lines.map{ |x| x.strip[0..20] }.select{ |id| id.length > 8 }
 
-        @books = @books.where('bib_id::char IN (?) OR obj_id IN (?)',
+        @books = @books.where('bib_id IN (?) OR obj_id IN (?)',
                               bib_ids, object_ids)
         # Compile a list of entered IDs for which books were not found.
         if bib_ids.any?
           sql = "SELECT * FROM "\
-            "(values #{bib_ids.map{ |id| "('#{id}')" }.join(',')}) as T(ID) "\
+            "(values #{bib_ids.map{ |id| "(#{id})" }.join(',')}) as T(ID) "\
             "EXCEPT "\
-            "SELECT bib_id::char "\
+            "SELECT bib_id "\
             "FROM books;"
           @missing_ids += ActiveRecord::Base.connection.execute(sql).map{ |r| r['id'] }
         end
@@ -62,11 +62,16 @@ class BooksController < ApplicationController
           @missing_ids += ActiveRecord::Base.connection.execute(sql).map{ |r| r['id'] }
         end
       else
-        q = "%#{query.strip}%"
-        @books = @books.where('CAST(bib_id AS VARCHAR(10)) LIKE ? '\
-        'OR oclc_number LIKE ? OR obj_id LIKE ? OR LOWER(title) LIKE LOWER(?) '\
-        'OR LOWER(author) LIKE LOWER(?) OR LOWER(ia_identifier) LIKE LOWER(?)' \
-        'OR LOWER(date) LIKE LOWER(?)', q, q, q, q, q, q, q)
+        q = query.strip
+        if q.to_i.to_s == q # if the query is number
+          @books = @books.where('bib_id = ? OR oclc_number = ?', q, q)
+        else
+          q = "%#{query.strip}%"
+          @books = @books.where('CAST(bib_id AS VARCHAR(10)) LIKE ? '\
+          'OR oclc_number LIKE ? OR obj_id LIKE ? OR LOWER(title) LIKE LOWER(?) '\
+          'OR LOWER(author) LIKE LOWER(?) OR LOWER(ia_identifier) LIKE LOWER(?)' \
+          'OR LOWER(date) LIKE LOWER(?)', q, q, q, q, q, q, q)
+        end
       end
     end
 
@@ -74,7 +79,7 @@ class BooksController < ApplicationController
     # These are used by checkboxes in the books UI.
     if @allowed_params[:in].respond_to?(:each) and
         @allowed_params[:ni].respond_to?(:each) and
-        (@allowed_params[:in] & @allowed_params[:ni]).length > 0
+        (@allowed_params[:in] & @allowed_params[:ni]).any?
       flash['error'] = 'Cannot search for books that are both in and not in '\
           'the same service.'
     else
@@ -106,7 +111,9 @@ class BooksController < ApplicationController
       @books = @books.order(:title)
     end
 
-    # Harvest mode (harvest=true) uses a query that the web UI can't generate.
+    # Harvest mode (?harvest=true) is used by the harvester
+    # (https://github.com/medusa-project/metaslurper).
+    # It uses a query that the web UI can't generate.
     if @allowed_params[:harvest] == 'true'
       # Exclude Hathitrust-restricted books (DLDS-70)
       @books = @books.where('hathitrust_access != ?', 'deny')
