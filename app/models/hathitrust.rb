@@ -8,7 +8,7 @@ class Hathitrust
 
   def self.check_in_progress?
     Task.where(service: Service::HATHITRUST).
-        where('status NOT IN (?)', [Status::SUCCEEDED, Status::FAILED]).
+        where('status NOT IN (?)', [Status::WAITING, Status::SUCCEEDED, Status::FAILED]).
         limit(1).any?
   end
 
@@ -16,17 +16,30 @@ class Hathitrust
   # Checks HathiTrust by downloading the latest HathiFile
   # (http://www.hathitrust.org/hathifiles).
   #
-  def check
+  # @param task [Task] Optional. If not provided, one will be created.
+  #
+  def check(task = nil)
     if RecordSource.import_in_progress? or Service.check_in_progress?
       raise 'Cannot check HathiTrust while another import or service check is '\
       'in progress.'
     end
-    task = Task.create!(name: 'Checking HathiTrust',
-                        service: Service::HATHITRUST)
-    puts task.name
+
+    task_args = {
+        name: 'Checking HathiTrust',
+        service: Service::HATHITRUST,
+        status: Status::RUNNING
+    }
+    if task
+      Rails.logger.info('Hathitrust.check(): updating provided Task')
+      task.update!(task_args)
+    else
+      Rails.logger.info('Hathitrust.check(): creating new Task')
+      task = Task.create!(task_args)
+    end
 
     pathname = nil
     begin
+      # TODO: can we read from the download stream rather than downloading to disk?
       pathname = get_hathifile(task)
       nuc_code = Configuration.instance.library_nuc_code
 
@@ -84,9 +97,10 @@ class Hathitrust
   ##
   # Invokes a rake task via an ECS task to check the service.
   #
+  # @param task [Task]
   # @return [void]
   #
-  def check_async
+  def check_async(task)
     unless Rails.env.production? or Rails.env.demo?
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
@@ -103,7 +117,7 @@ class Hathitrust
             container_overrides: [
                 {
                     name: config.ecs_async_task_container,
-                    command: ['bin/rails', 'books:check_hathitrust']
+                    command: ['bin/rails', "books:check_hathitrust[#{task.id}]"]
                 },
             ]
         },

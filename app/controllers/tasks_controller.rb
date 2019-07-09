@@ -27,7 +27,10 @@ class TasksController < ApplicationController
       obj = s3.bucket(config.temp_bucket).object(key)
       obj.put(body: uploaded_io)
 
-      Google.new(key).check_async
+      task = Task.create!(name: 'Preparing to check Google',
+                          service: Service::GOOGLE,
+                          status: Status::WAITING)
+      Google.new(key).check_async(task)
       flash['success'] = 'Google check will begin momentarily.'
     else
       flash['error'] = 'No file provided.'
@@ -42,7 +45,10 @@ class TasksController < ApplicationController
   # Responds to POST /check-hathitrust
   #
   def check_hathitrust
-    Hathitrust.new.check_async
+    task = Task.create!(name: 'Preparing to check HathiTrust',
+                        service: Service::HATHITRUST,
+                        status: Status::WAITING)
+    Hathitrust.new.check_async(task)
   rescue => e
     handle_error(e)
   else
@@ -55,7 +61,10 @@ class TasksController < ApplicationController
   # Responds to POST /check-internet-archive
   #
   def check_internet_archive
-    InternetArchive.new.check_async
+    task = Task.create!(name: 'Preparing to check Internet Archive',
+                        service: Service::INTERNET_ARCHIVE,
+                        status: Status::WAITING)
+    InternetArchive.new.check_async(task)
   rescue => e
     handle_error(e)
   else
@@ -68,7 +77,10 @@ class TasksController < ApplicationController
   # Responds to POST /import
   #
   def import
-    RecordSource.new.import_async
+    task = Task.create!(name: 'Preparing to import MARCXML records',
+                        service: Service::LOCAL_STORAGE,
+                        status: Status::WAITING)
+    RecordSource.new.import_async(task)
   rescue => e
     handle_error(e)
   else

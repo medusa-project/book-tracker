@@ -10,7 +10,7 @@ class Google
 
   def self.check_in_progress?
     Task.where(service: Service::GOOGLE).
-        where('status NOT IN (?)', [Status::SUCCEEDED, Status::FAILED]).
+        where('status NOT IN (?)', [Status::WAITING, Status::SUCCEEDED, Status::FAILED]).
         count > 0
   end
 
@@ -22,14 +22,27 @@ class Google
     @inventory_key = inventory_key
   end
 
-  def check
+  ##
+  # @param task [Task] Optional. If not provided, one will be created.
+  #
+  def check(task = nil)
     if RecordSource.import_in_progress? or Service.check_in_progress?
       raise 'Cannot check Google while another import or service '\
       'check is in progress.'
     end
 
-    task = Task.create!(name: 'Checking Google', service: Service::GOOGLE)
-    puts task.name
+    task_args = {
+        name: 'Checking Google',
+        service: Service::GOOGLE,
+        status: Status::RUNNING
+    }
+    if task
+      Rails.logger.info('Google.check(): updating provided Task')
+      task.update!(task_args)
+    else
+      Rails.logger.info('Google.check(): creating new Task')
+      task = Task.create!(task_args)
+    end
 
     bt_items_in_gb = new_bt_items_in_gb = num_skipped_lines = 0
 
@@ -102,9 +115,10 @@ class Google
   ##
   # Invokes a rake task via an ECS task to check the service.
   #
+  # @param task [Task]
   # @return [void]
   #
-  def check_async
+  def check_async(task)
     unless Rails.env.production? or Rails.env.demo?
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
@@ -121,7 +135,7 @@ class Google
             container_overrides: [
                 {
                     name: config.ecs_async_task_container,
-                    command: ['bin/rails', "books:check_google[#{@inventory_key}]"]
+                    command: ['bin/rails', "books:check_google[#{@inventory_key},#{task.id}]"]
                 },
             ]
         },

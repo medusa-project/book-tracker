@@ -7,7 +7,7 @@ class RecordSource
 
   def self.import_in_progress?
     Task.where(service: Service::LOCAL_STORAGE).
-        where('status NOT IN (?)', [Status::SUCCEEDED, Status::FAILED]).count > 0
+        where('status NOT IN (?)', [Status::WAITING, Status::SUCCEEDED, Status::FAILED]).count > 0
   end
 
   ##
@@ -17,13 +17,25 @@ class RecordSource
   # See: https://docs.aws.amazon.com/sdk-for-ruby/index.html#lang/en_us
   # See: https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/S3/Client.html
   #
-  def import
-    if Service.check_in_progress?
+  # @param task [Task] Optional. If not provided, one will be created.
+  #
+  def import(task = nil)
+    if RecordSource.import_in_progress? or Service.check_in_progress?
       raise 'Cannot import while another import or service check is in progress.'
     end
 
-    task = Task.create!(name: 'Importing MARCXML records',
-                        service: Service::LOCAL_STORAGE)
+    task_args = {
+        name: 'Importing MARCXML records',
+        service: Service::LOCAL_STORAGE,
+        status: Status::RUNNING
+    }
+    if task
+      Rails.logger.info('RecordSource.import(): updating provided Task')
+      task.update!(task_args)
+    else
+      Rails.logger.info('RecordSource.import(): creating new Task')
+      task = Task.create!(task_args)
+    end
 
     begin
       config = Configuration.instance
@@ -45,6 +57,8 @@ class RecordSource
         list_response.contents.each do |object|
           next unless object.key.downcase.end_with?('.xml')
 
+          Rails.logger.info("RecordSource.import(): getting object #{object.key}")
+
           get_response = client.get_object(
               bucket: config.book_bucket,
               key: object.key)
@@ -55,6 +69,7 @@ class RecordSource
             doc.encoding = 'utf-8'
 
             doc.xpath('//marc:record', MARCXML_NAMESPACES).each do |record|
+              Rails.logger.debug("RecordSource.import(): reading record #{record_index}")
               book, status = Book.insert_or_update!(
                   Book.params_from_marcxml_record(record),
                   object.key)
@@ -64,7 +79,7 @@ class RecordSource
                 num_updated += 1
               end
               record_index += 1
-              if record_index % 1000 == 0
+              if record_index % 100 == 0
                 task.update(name: "Importing MARCXML records: "\
                     "scanned #{record_index} records in #{file_index + 1} files "\
                     "(no progress available)")
@@ -104,9 +119,10 @@ class RecordSource
   ##
   # Invokes a rake task via an ECS task to import records.
   #
+  # @param task [Task]
   # @return [void]
   #
-  def import_async
+  def import_async(task)
     unless Rails.env.production? or Rails.env.demo?
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
@@ -123,7 +139,7 @@ class RecordSource
             container_overrides: [
                 {
                     name: config.ecs_async_task_container,
-                    command: ['bin/rails', 'books:import']
+                    command: ['bin/rails', "books:import[#{task.id}]"]
                 },
             ]
         },

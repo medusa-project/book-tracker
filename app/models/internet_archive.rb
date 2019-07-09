@@ -6,18 +6,31 @@ class InternetArchive
 
   def self.check_in_progress?
     Task.where(service: Service::INTERNET_ARCHIVE).
-        where('status NOT IN (?)', [Status::SUCCEEDED, Status::FAILED]).
+        where('status NOT IN (?)', [Status::WAITING, Status::SUCCEEDED, Status::FAILED]).
         limit(1).any?
   end
 
-  def check
+  ##
+  # @param task [Task] Optional. If not provided, one will be created.
+  #
+  def check(task = nil)
     if RecordSource.import_in_progress? or Service.check_in_progress?
       raise 'Cannot check Internet Archive while another import or service '\
       'check is in progress.'
     end
 
-    task = Task.create!(name: 'Checking Internet Archive',
-                        service: Service::INTERNET_ARCHIVE)
+    task_args = {
+        name: 'Checking Internet Archive',
+        service: Service::INTERNET_ARCHIVE,
+        status: Status::RUNNING
+    }
+    if task
+      Rails.logger.info('InternetArchive.check(): updating provided Task')
+      task.update!(task_args)
+    else
+      Rails.logger.info('InternetArchive.check(): creating new Task')
+      task = Task.create!(task_args)
+    end
 
     begin
       doc = get_api_results(task)
@@ -67,9 +80,10 @@ class InternetArchive
   ##
   # Invokes a rake task via an ECS task to check the service.
   #
+  # @param task [Task]
   # @return [void]
   #
-  def check_async
+  def check_async(task)
     unless Rails.env.production? or Rails.env.demo?
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
@@ -86,7 +100,7 @@ class InternetArchive
             container_overrides: [
                 {
                     name: config.ecs_async_task_container,
-                    command: ['bin/rails', 'books:check_internet_archive']
+                    command: ['bin/rails', "books:check_internet_archive[#{task.id}]"]
                 },
             ]
         },
