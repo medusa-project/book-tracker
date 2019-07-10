@@ -49,8 +49,7 @@ class RecordSource
 
       client = Aws::S3::Client.new(opts)
 
-      num_inserted = num_updated = num_invalid_files = file_index =
-          record_index = 0
+      num_invalid_files = file_index = record_index = 0
       client.list_objects(
           bucket: config.book_bucket,
           prefix: config.s3_key_prefix).each do |list_response|
@@ -70,14 +69,9 @@ class RecordSource
 
             doc.xpath('//marc:record', MARCXML_NAMESPACES).each do |record|
               Rails.logger.debug("RecordSource.import(): reading record #{record_index}")
-              book, status = Book.insert_or_update!(
+              Book.insert_or_update!(
                   Book.params_from_marcxml_record(record),
                   object.key)
-              if status == Book::INSERTED
-                num_inserted += 1
-              else
-                num_updated += 1
-              end
               record_index += 1
               if record_index % 100 == 0
                 task.update(name: "Importing MARCXML records: "\
@@ -98,7 +92,7 @@ class RecordSource
         end
       end
     rescue SystemExit, Interrupt => e
-      task.update(name: "Import failed: #{e}",
+      task.update(name: 'Import aborted',
                   status: Status::FAILED)
       puts task.name
       raise e
@@ -108,9 +102,9 @@ class RecordSource
       puts task.name
       puts e.backtrace
     else
-      task.update(name: sprintf('Importing MARCXML records: %d records added; %d '\
-                                'records updated or unchanged; %d skipped files',
-                                num_inserted, num_updated, num_invalid_files),
+      task.update(name: sprintf('Importing MARCXML records: %d records added, '\
+                                'updated, or unchanged; %d skipped files',
+                                record_index, num_invalid_files),
                   status: Status::SUCCEEDED)
       puts task.name
     end

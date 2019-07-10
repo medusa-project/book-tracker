@@ -7,11 +7,6 @@ class Book < ApplicationRecord
   MAX_STRING_LENGTH = 256
   SUBJECT_DELIMITER = '||'
 
-  # Used by self.insert_or_update!
-  INSERTED = 0
-  # Used by self.insert_or_update!
-  UPDATED = 1
-
   attr_accessor :url
   before_save :truncate_values
 
@@ -23,21 +18,18 @@ class Book < ApplicationRecord
   # @param params [ActionController::Parameters]
   # @param source_path [String] Pathname of the file from which the params
   #                             were extracted.
-  # @return [Array] Array with the created or updated Book at position 0 and
-  #                 the status (Book::INSERTED or Book::UPDATED) at position 1.
+  # @return [Book] The created or updated Book.
   #
   def self.insert_or_update!(params, source_path = nil)
-    status = Book::UPDATED
     book = Book.find_by_obj_id(params[:obj_id])
     if book
       book.update_attributes(params)
     else
       book = Book.new(params)
-      status = Book::INSERTED
     end
     book.source_path = source_path
     book.save!
-    return book, status
+    return book
   end
 
   ##
