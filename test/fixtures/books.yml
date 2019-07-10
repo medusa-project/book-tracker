@@ -3,7 +3,7 @@
 one:
   bib_id: 1
   oclc_number: MyString
-  obj_id: MyString
+  obj_id: 001
   title: MyString
   author: MyString
   volume: MyString
@@ -19,7 +19,7 @@ one:
 two:
   bib_id: 1
   oclc_number: MyString
-  obj_id: MyString
+  obj_id: 002
   title: MyString
   author: MyString
   volume: MyString
