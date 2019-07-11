@@ -54,7 +54,7 @@ class RecordSource
       batch = []
       client.list_objects(
           bucket: config.book_bucket,
-          prefix: config.s3_key_prefix).each do |list_response|
+          prefix: config.book_key_prefix).each do |list_response|
         list_response.contents.each do |object|
           next unless object.key.downcase.end_with?('.xml')
 
