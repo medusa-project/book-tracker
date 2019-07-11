@@ -111,6 +111,8 @@ class RecordSource
                                 record_index, num_invalid_files),
                   status: Status::SUCCEEDED)
       puts task.name
+    ensure
+      ActiveRecord::Base.connection.execute('VACUUM ANALYZE;')
     end
   end
 
