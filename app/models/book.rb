@@ -1,5 +1,9 @@
 class Book < ApplicationRecord
 
+  COLUMNS = %w(author bib_id created_at date exists_in_hathitrust
+               exists_in_internet_archive exists_in_google hathitrust_access
+               ia_identifier hathitrust_rights language obj_id oclc_number
+               raw_marcxml source_path subject title updated_at volume)
   CSV_HEADER = ['Bib ID', 'Medusa ID', 'OCLC Number', 'Object ID', 'Title',
                 'Author', 'Volume', 'Date', 'IA Identifier',
                 'HathiTrust Handle', 'Exists in HathiTrust', 'Exists in IA',
@@ -11,56 +15,90 @@ class Book < ApplicationRecord
   before_save :truncate_values
 
   ##
-  # Static method that either inserts a new book, or updates an existing book,
-  # depending on whether a book with a matching object ID is already present
-  # in the database.
+  # Inserts or updates a batch of books in one SQL statement. This may be a lot
+  # faster (due to the table indexes) than using one statement per book.
   #
-  # @param params [ActionController::Parameters]
-  # @param source_path [String] Pathname of the file from which the params
-  #                             were extracted.
-  # @return [Book] The created or updated Book.
+  # @param rows [Enumerable<Hash<Symbol,Object>>] Enumerable of hashes with book
+  #             table column names as keys.
+  # @return [void]
   #
-  def self.insert_or_update!(params, source_path = nil)
-    book = Book.find_by_obj_id(params[:obj_id])
-    if book
-      book.update_attributes(params)
-    else
-      book = Book.new(params)
+  def self.bulk_upsert(rows)
+    # Duplicate object IDs will be refused due to the unique index on obj_id.
+    rows.uniq!{ |r| r[:obj_id] }
+
+    sql = StringIO.new
+
+    sql << 'INSERT INTO books('
+    sql << COLUMNS.join(', ')
+    sql << ') VALUES '
+
+    value_index = 0
+    rows.length.times do |index|
+      sql << "\n\t("
+      sql << COLUMNS.map{ |c| "$#{value_index += 1}" }.join(', ')
+      sql << ')'
+      sql << ',' if index < rows.length - 1
     end
-    book.source_path = source_path
-    book.save!
-    return book
+
+    binds = []
+    rows.each do |row|
+      row[:created_at] = 'NOW()'
+      row[:updated_at] = 'NOW()'
+      COLUMNS.each do |col|
+        value = row[col.to_sym]
+        binds << [nil, value.present? ? value : nil]
+      end
+    end
+
+    sql << "\nON CONFLICT (obj_id) DO\n"
+    sql << "UPDATE SET\n\t"
+    cols = COLUMNS.reject{ |c| c == 'created_at' }
+    cols.each_with_index do |col, index|
+      sql << col
+      sql << ' = excluded.'
+      sql << col
+      sql << ', ' if index < cols.length - 1
+    end
+    sql << ';'
+    begin
+      ActiveRecord::Base.connection.exec_query(sql.string, 'SQL', binds, prepare: true)
+    rescue => e
+      Rails.logger.error("Book.bulk_upsert(): #{e}\nSQL: #{sql.string}")
+      raise e
+    end
   end
 
   ##
   # @param record Nokogiri element corresponding to a /collection/record
   #               element in a MARCXML file.
+  # @param key [String] Object key of the MARCXML file.
   # @return [Hash] Params hash for a Book.
   #
-  def self.params_from_marcxml_record(record)
+  def self.params_from_marcxml_record(key, record)
     namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
-    book_params = {}
+    book_params = {
+        source_path: key
+    }
 
     # raw MARCXML
     book_params[:raw_marcxml] = record.to_xml(indent: 4)
 
     # extract bib ID
     nodes = record.xpath('marc:controlfield[@tag = 001]', namespaces)
-    book_params[:bib_id] = nodes.first.content.strip if nodes.any?
+    book_params[:bib_id] = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
 
     # extract OCLC no. from 035 subfield a
     nodes = record.
         xpath('marc:datafield[@tag = 035][1]/marc:subfield[@code = \'a\']', namespaces)
-    book_params[:oclc_number] = nodes.first.content.sub(/^[(OCoLC)]*/, '').
-        gsub(/[^0-9]/, '').strip if nodes.any?
+    book_params[:oclc_number] = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
 
     # extract author & title from 100 & 245 subfields a & b
     book_params[:author] = record.
         xpath('marc:datafield[@tag = 100][1]/marc:subfield', namespaces).
-        map{ |t| t.content }.join(' ').strip
+        map(&:content).join(' ').strip
     book_params[:title] = record.
         xpath('marc:datafield[@tag = 245][1]/marc:subfield[@code = \'a\' or @code = \'b\']', namespaces).
-        map{ |t| t.content }.join(' ').strip
+        map(&:content).join(' ').strip
 
     # extract language from 008
     nodes = record.xpath('marc:controlfield[@tag = 008][1]', namespaces)

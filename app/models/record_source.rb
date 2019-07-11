@@ -3,6 +3,7 @@
 #
 class RecordSource
 
+  INSERT_BATCH_SIZE = 100
   MARCXML_NAMESPACES = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
 
   def self.import_in_progress?
@@ -50,13 +51,14 @@ class RecordSource
       client = Aws::S3::Client.new(opts)
 
       num_invalid_files = file_index = record_index = 0
+      batch = []
       client.list_objects(
           bucket: config.book_bucket,
           prefix: config.s3_key_prefix).each do |list_response|
         list_response.contents.each do |object|
           next unless object.key.downcase.end_with?('.xml')
 
-          Rails.logger.info("RecordSource.import(): getting object #{object.key}")
+          Rails.logger.debug("RecordSource.import(): getting object #{object.key}")
 
           get_response = client.get_object(
               bucket: config.book_bucket,
@@ -69,9 +71,10 @@ class RecordSource
 
             doc.xpath('//marc:record', MARCXML_NAMESPACES).each do |record|
               Rails.logger.debug("RecordSource.import(): reading record #{record_index}")
-              Book.insert_or_update!(
-                  Book.params_from_marcxml_record(record),
-                  object.key)
+
+              batch << Book.params_from_marcxml_record(object.key, record)
+              upsert_if_necessary(batch)
+
               record_index += 1
               if record_index % 100 == 0
                 task.update(name: "Importing MARCXML records: "\
@@ -91,6 +94,7 @@ class RecordSource
           end
         end
       end
+      upsert(batch)
     rescue SystemExit, Interrupt => e
       task.update(name: 'Import aborted',
                   status: Status::FAILED)
@@ -146,6 +150,21 @@ class RecordSource
         }
     }
     ecs.run_task(args)
+  end
+
+  private
+
+  def upsert(batch)
+    Rails.logger.debug("RecordSource.upsert(): upserting #{batch.length} records")
+    Book.bulk_upsert(batch)
+  ensure
+    batch.clear
+  end
+
+  def upsert_if_necessary(batch)
+    if batch.length >= INSERT_BATCH_SIZE
+      upsert(batch)
+    end
   end
 
 end
