@@ -109,6 +109,7 @@ class Google
     ensure
       client.delete_object(bucket: config.temp_bucket,
                            key: @inventory_key)
+      ActiveRecord::Base.connection.execute('VACUUM ANALYZE;')
     end
   end
 

@@ -91,6 +91,7 @@ class Hathitrust
       puts task.name
     ensure
       FileUtils.rm(pathname, force: true) if pathname.present?
+      ActiveRecord::Base.connection.execute('VACUUM ANALYZE;')
     end
   end
 

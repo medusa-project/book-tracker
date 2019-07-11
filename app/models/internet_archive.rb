@@ -74,6 +74,8 @@ class InternetArchive
       task.status = Status::SUCCEEDED
       task.save!
       puts task.name
+    ensure
+      ActiveRecord::Base.connection.execute('VACUUM ANALYZE;')
     end
   end
 
