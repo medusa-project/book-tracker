@@ -15,7 +15,7 @@ class RecordSource
 
   def self.import_in_progress?
     Task.where(service: Service::LOCAL_STORAGE).
-        where('status IN (?)', [Status::RUNNING]).count > 0
+        where('status IN (?)', [Task::Status::RUNNING]).count > 0
   end
 
   ##
@@ -38,7 +38,7 @@ class RecordSource
     task_args = {
         name: 'Importing MARCXML records',
         service: Service::LOCAL_STORAGE,
-        status: Status::RUNNING
+        status: Task::Status::RUNNING
     }
     if task
       Rails.logger.info('RecordSource.import(): updating provided Task')
@@ -107,19 +107,19 @@ class RecordSource
       upsert(batch)
     rescue SystemExit, Interrupt => e
       task.update(name: 'Import aborted',
-                  status: Status::FAILED)
+                  status: Task::Status::FAILED)
       puts task.name
       raise e
     rescue => e
       task.update(name: "Import failed: #{e}",
-                  status: Status::FAILED)
+                  status: Task::Status::FAILED)
       puts task.name
       puts e.backtrace
     else
       task.update(name: sprintf('Importing MARCXML records: %d records added, '\
                                 'updated, or unchanged; %d skipped files',
                                 record_index, num_invalid_files),
-                  status: Status::SUCCEEDED)
+                  status: Task::Status::SUCCEEDED)
       puts task.name
     end
   end

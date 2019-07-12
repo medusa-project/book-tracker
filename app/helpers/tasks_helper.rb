@@ -2,13 +2,13 @@ module TasksHelper
 
   def bootstrap_class_for_status(status)
     case status
-      when Status::SUCCEEDED
+      when Task::Status::SUCCEEDED
         'text-success'
-      when Status::FAILED
+      when Task::Status::FAILED
         'text-danger'
-      when Status::RUNNING
+      when Task::Status::RUNNING
         'text-primary'
-      when Status::PAUSED
+      when Task::Status::PAUSED
         'text-info'
     end
   end

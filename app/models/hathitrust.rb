@@ -11,7 +11,7 @@ class Hathitrust
   #
   def self.check_authorized?
     Task.where(service: Service::HATHITRUST).
-        where('status IN (?)', [Status::RUNNING]).count == 0
+        where('status IN (?)', [Task::Status::RUNNING]).count == 0
   end
 
   ##
@@ -26,7 +26,7 @@ class Hathitrust
     task_args = {
         name: 'Checking HathiTrust',
         service: Service::HATHITRUST,
-        status: Status::RUNNING
+        status: Task::Status::RUNNING
     }
     if task
       Rails.logger.info('Hathitrust.check(): updating provided Task')
@@ -73,19 +73,19 @@ class Hathitrust
       end
     rescue SystemExit, Interrupt => e
       task.name = "HathiTrust check failed: #{e}"
-      task.status = Status::FAILED
+      task.status = Task::Status::FAILED
       task.save!
       puts task.name
       raise e
     rescue => e
       task.name = "HathiTrust check failed: #{e}"
-      task.status = Status::FAILED
+      task.status = Task::Status::FAILED
       task.save!
       puts task.name
     else
       task.name = "Checking HathiTrust: Updated database with "\
         "#{Book.where(exists_in_hathitrust: true).count} found items."
-      task.status = Status::SUCCEEDED
+      task.status = Task::Status::SUCCEEDED
       task.save!
       puts task.name
     ensure

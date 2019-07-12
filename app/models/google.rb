@@ -16,7 +16,7 @@ class Google
   #
   def self.check_authorized?
     Task.where(service: Service::GOOGLE).
-        where('status IN (?)', [Status::RUNNING]).count == 0
+        where('status IN (?)', [Task::Status::RUNNING]).count == 0
   end
 
   ##
@@ -36,7 +36,7 @@ class Google
     task_args = {
         name: 'Checking Google',
         service: Service::GOOGLE,
-        status: Status::RUNNING
+        status: Task::Status::RUNNING
     }
     if task
       Rails.logger.info('Google.check(): updating provided Task')
@@ -89,18 +89,18 @@ class Google
       end
     rescue SystemExit, Interrupt => e
       task.update!(name: "Google check failed: #{e}",
-                   status: Status::FAILED)
+                   status: Task::Status::FAILED)
       puts task.name
       raise e
     rescue => e
       task.update!(name: "Google check failed: #{e}",
-                   status: Status::FAILED)
+                   status: Task::Status::FAILED)
       puts task.name
     else
       task.update!(name: "Checking Google: updated database with #{num_lines} "\
                          "found items; #{num_skipped_lines} lines "\
                          "malformed/skipped.",
-                   status: Status::SUCCEEDED)
+                   status: Task::Status::SUCCEEDED)
       puts task.name
     ensure
       set_existing(obj_id_batch)

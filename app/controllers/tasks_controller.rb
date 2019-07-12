@@ -32,7 +32,7 @@ class TasksController < ApplicationController
 
       task = Task.create!(name: 'Preparing to check Google',
                           service: Service::GOOGLE,
-                          status: Status::WAITING)
+                          status: Task::Status::WAITING)
       Google.new(key).check_async(task)
       flash['success'] = 'Google check will begin momentarily.'
     else
@@ -50,7 +50,7 @@ class TasksController < ApplicationController
   def check_hathitrust
     task = Task.create!(name: 'Preparing to check HathiTrust',
                         service: Service::HATHITRUST,
-                        status: Status::WAITING)
+                        status: Task::Status::WAITING)
     Hathitrust.new.check_async(task)
   rescue => e
     handle_error(e)
@@ -66,7 +66,7 @@ class TasksController < ApplicationController
   def check_internet_archive
     task = Task.create!(name: 'Preparing to check Internet Archive',
                         service: Service::INTERNET_ARCHIVE,
-                        status: Status::WAITING)
+                        status: Task::Status::WAITING)
     InternetArchive.new.check_async(task)
   rescue => e
     handle_error(e)
@@ -82,7 +82,7 @@ class TasksController < ApplicationController
   def import
     task = Task.create!(name: 'Preparing to import MARCXML records',
                         service: Service::LOCAL_STORAGE,
-                        status: Status::WAITING)
+                        status: Task::Status::WAITING)
     RecordSource.new.import_async(task)
   rescue => e
     handle_error(e)

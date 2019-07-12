@@ -23,13 +23,13 @@ class BooksController < ApplicationController
 
     @dates = {
         local_storage: Task.where(service: Service::LOCAL_STORAGE).
-            where(status: Status::SUCCEEDED).last,
+            where(status: Task::Status::SUCCEEDED).last,
         hathitrust: Task.where(service: Service::HATHITRUST).
-            where(status: Status::SUCCEEDED).last,
+            where(status: Task::Status::SUCCEEDED).last,
         internet_archive: Task.where(service: Service::INTERNET_ARCHIVE).
-            where(status: Status::SUCCEEDED).last,
+            where(status: Task::Status::SUCCEEDED).last,
         google: Task.where(service: Service::GOOGLE).
-            where(status: Status::SUCCEEDED).last
+            where(status: Task::Status::SUCCEEDED).last
     }
     @dates.each{ |k, v| @dates[k] = v&.completed_at }
 

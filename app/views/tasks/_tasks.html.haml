@@ -19,7 +19,7 @@
           %td= task.id
           %td= task.name
           %td{class: bootstrap_class_for_status(task.status)}
-            = Status::to_s(task.status)
+            = Task::Status::to_s(task.status)
           %td= (task.percent_complete * 100).round(1).to_s + '%'
           %td= local_time_ago(task.created_at)
           %td= task.completed_at ? local_time_ago(task.completed_at) : ''

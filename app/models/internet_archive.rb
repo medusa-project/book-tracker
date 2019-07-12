@@ -12,7 +12,7 @@ class InternetArchive
   #
   def self.check_authorized?
     Task.where(service: Service::INTERNET_ARCHIVE).
-        where('status IN (?)', [Status::RUNNING]).count == 0
+        where('status IN (?)', [Task::Status::RUNNING]).count == 0
   end
 
   ##
@@ -24,7 +24,7 @@ class InternetArchive
     task_args = {
         name: 'Checking Internet Archive: querying the API...',
         service: Service::INTERNET_ARCHIVE,
-        status: Status::RUNNING
+        status: Task::Status::RUNNING
     }
     if task
       Rails.logger.info('InternetArchive.check(): updating provided Task')
@@ -59,18 +59,18 @@ class InternetArchive
       end
     rescue SystemExit, Interrupt => e
       task.update!(name: "Internet Archive check failed: #{e}",
-                   status: Status::FAILED)
+                   status: Task::Status::FAILED)
       puts task.name
       raise e
     rescue => e
       task.update!(name: "Internet Archive check failed: #{e}",
-                   status: Status::FAILED)
+                   status: Task::Status::FAILED)
       puts task.name
       raise e
     else
       task.update!(name: "Checking Internet Archive: updated database with "\
                          "#{actual_num_items} found items.",
-                   status: Status::SUCCEEDED)
+                   status: Task::Status::SUCCEEDED)
       puts task.name
     ensure
       set_existing(ia_id_batch)
