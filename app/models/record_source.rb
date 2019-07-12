@@ -3,17 +3,30 @@
 #
 class RecordSource
 
+  ANALYZE_INTERVAL = 10000
   INSERT_BATCH_SIZE = 100
   MARCXML_NAMESPACES = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
 
+  ##
+  # @return [Boolean] Whether an invocation of check() is authorized.
+  #
+  def self.import_authorized?
+    !import_in_progress?
+  end
+
   def self.import_in_progress?
     Task.where(service: Service::LOCAL_STORAGE).
-        where('status NOT IN (?)', [Status::WAITING, Status::SUCCEEDED, Status::FAILED]).count > 0
+        where('status IN (?)', [Status::WAITING, Status::RUNNING]).count > 0
   end
 
   ##
   # Imports records from a tree of MARCXML files, updating them if one with
-  # the same bib ID already exists, and adding them if not.
+  # the same object ID already exists, and adding them if not.
+  #
+  # N.B.: the task progress is not updated because to compute an accurate
+  # progress would require counting all records in all files beforehand, which
+  # would be expensive. A file count isn't good enough because a handful of
+  # files contain tens of thousands of records and others only one.
   #
   # See: https://docs.aws.amazon.com/sdk-for-ruby/index.html#lang/en_us
   # See: https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/S3/Client.html
@@ -21,9 +34,7 @@ class RecordSource
   # @param task [Task] Optional. If not provided, one will be created.
   #
   def import(task = nil)
-    if RecordSource.import_in_progress? or Service.check_in_progress?
-      raise 'Cannot import while another import or service check is in progress.'
-    end
+    raise 'Another import is in progress.' unless self.class.import_authorized?
 
     task_args = {
         name: 'Importing MARCXML records',
@@ -82,6 +93,9 @@ class RecordSource
                     "(no progress available)")
                 print "#{task.name.ljust(80)}\r"
               end
+              if record_index % ANALYZE_INTERVAL == 0
+                analyze
+              end
             end
           rescue => e
             # This is probably an undefined namespace prefix error, which means
@@ -112,7 +126,7 @@ class RecordSource
                   status: Status::SUCCEEDED)
       puts task.name
     ensure
-      ActiveRecord::Base.connection.execute('VACUUM ANALYZE;')
+      analyze
     end
   end
 
@@ -155,6 +169,13 @@ class RecordSource
   end
 
   private
+
+  ##
+  # Runs an ANALYZE, useful to speed up queries after a lot of INSERTs/UPDATEs.
+  #
+  def analyze
+    ActiveRecord::Base.connection.execute('ANALYZE books;')
+  end
 
   def upsert(batch)
     Rails.logger.debug("RecordSource.upsert(): upserting #{batch.length} records")

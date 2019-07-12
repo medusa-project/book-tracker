@@ -5,9 +5,4 @@ class Service
   GOOGLE = 2
   LOCAL_STORAGE = 3
 
-  def self.check_in_progress?
-    RecordSource.import_in_progress? or Hathitrust.check_in_progress? or
-        InternetArchive.check_in_progress? or Google.check_in_progress?
-  end
-
 end

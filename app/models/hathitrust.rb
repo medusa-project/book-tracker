@@ -6,10 +6,12 @@ class Hathitrust
 
   TEMP_DIR = Rails.root.join('tmp')
 
-  def self.check_in_progress?
+  ##
+  # @return [Boolean] Whether an invocation of check() is authorized.
+  #
+  def self.check_authorized?
     Task.where(service: Service::HATHITRUST).
-        where('status NOT IN (?)', [Status::WAITING, Status::SUCCEEDED, Status::FAILED]).
-        limit(1).any?
+        where('status IN (?)', [Status::WAITING, Status::RUNNING]).count == 0
   end
 
   ##
@@ -19,10 +21,7 @@ class Hathitrust
   # @param task [Task] Optional. If not provided, one will be created.
   #
   def check(task = nil)
-    if RecordSource.import_in_progress? or Service.check_in_progress?
-      raise 'Cannot check HathiTrust while another import or service check is '\
-      'in progress.'
-    end
+    raise 'Another HathiTrust check is in progress.' unless self.class.check_authorized?
 
     task_args = {
         name: 'Checking HathiTrust',

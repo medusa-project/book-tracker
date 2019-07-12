@@ -3,7 +3,10 @@ class TasksController < ApplicationController
   TEMP_DIR = Rails.root.join('tmp')
 
   before_action :signed_in_user
-  before_action :service_check_in_progress, except: :index
+  before_action :authorize_google_check, only: :check_google
+  before_action :authorize_hathitrust_check, only: :check_hathitrust
+  before_action :authorize_internet_archive_check, only: :check_internet_archive
+  before_action :check_production, except: :index
 
   ##
   # Responds to POST /check-google
@@ -113,9 +116,41 @@ class TasksController < ApplicationController
 
   private
 
-  def service_check_in_progress
-    if Service::check_in_progress?
-      flash['error'] = 'Cannot import or check multiple services concurrently.'
+  def authorize_google_check
+    unless Google.check_authorized?
+      flash['error'] = 'Cannot check Google concurrently with an import or '\
+          'other Google check.'
+      redirect_back fallback_location: tasks_path
+    end
+  end
+
+  def authorize_hathitrust_check
+    unless Hathitrust.check_authorized?
+      flash['error'] = 'Cannot check HathiTrust concurrently with an import '\
+          'or other HathiTrust check.'
+      redirect_back fallback_location: tasks_path
+    end
+  end
+
+  def authorize_import
+    unless RecordSource.import_authorized?
+      flash['error'] = 'Cannot import records concurrently with another import.'
+      redirect_back fallback_location: tasks_path
+    end
+  end
+
+  def authorize_internet_archive_check
+    unless InternetArchive.check_authorized?
+      flash['error'] = 'Cannot check Internet Archive concurrently with an '\
+          'import or other Internet Archive check.'
+      redirect_back fallback_location: tasks_path
+    end
+  end
+
+  def check_production
+    unless Rails.env.production? or Rails.env.demo?
+      flash['error'] = 'This feature only works in production. Elsewhere, '\
+          'use a rake task instead.'
       redirect_back fallback_location: tasks_path
     end
   end

@@ -8,10 +8,12 @@
 #
 class Google
 
-  def self.check_in_progress?
+  ##
+  # @return [Boolean] Whether an invocation of check() is authorized.
+  #
+  def self.check_authorized?
     Task.where(service: Service::GOOGLE).
-        where('status NOT IN (?)', [Status::WAITING, Status::SUCCEEDED, Status::FAILED]).
-        count > 0
+        where('status IN (?)', [Status::WAITING, Status::RUNNING]).count == 0
   end
 
   ##
@@ -26,10 +28,7 @@ class Google
   # @param task [Task] Optional. If not provided, one will be created.
   #
   def check(task = nil)
-    if RecordSource.import_in_progress? or Service.check_in_progress?
-      raise 'Cannot check Google while another import or service '\
-      'check is in progress.'
-    end
+    raise 'Another Google check is in progress.' unless self.class.check_authorized?
 
     task_args = {
         name: 'Checking Google',
