@@ -11,7 +11,7 @@ class Hathitrust
   #
   def self.check_authorized?
     Task.where(service: Service::HATHITRUST).
-        where('status IN (?)', [Status::WAITING, Status::RUNNING]).count == 0
+        where('status IN (?)', [Status::RUNNING]).count == 0
   end
 
   ##
