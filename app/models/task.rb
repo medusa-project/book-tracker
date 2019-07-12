@@ -5,7 +5,7 @@ class Task < ApplicationRecord
   #
   class Status
 
-    WAITING = 0
+    SUBMITTED = 0
     RUNNING = 1
     PAUSED = 2
     SUCCEEDED = 3
@@ -17,8 +17,8 @@ class Task < ApplicationRecord
     #
     def self.to_s(status)
       case status
-      when Status::WAITING
-        'Waiting'
+      when Status::SUBMITTED
+        'Submitted'
       when Status::RUNNING
         'Running'
       when Status::PAUSED
