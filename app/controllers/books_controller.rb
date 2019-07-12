@@ -83,6 +83,8 @@ class BooksController < ApplicationController
       flash['error'] = 'Cannot search for books that are both in and not in '\
           'the same service.'
     else
+      # N.B.: the order of these WHERE conditions are aligned with the compound
+      # index on these three columns in the database.
       if @allowed_params[:in].respond_to?(:each)
         @allowed_params[:in].each do |service|
           case service
@@ -107,7 +109,6 @@ class BooksController < ApplicationController
           end
         end
       end
-
       @books = @books.order(:title)
     end
 

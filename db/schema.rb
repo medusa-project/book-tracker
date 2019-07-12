@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_12_184907) do
+ActiveRecord::Schema.define(version: 2019_07_12_232747) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -39,6 +39,7 @@ ActiveRecord::Schema.define(version: 2019_07_12_184907) do
     t.index ["bib_id"], name: "index_books_on_bib_id"
     t.index ["date"], name: "index_books_on_date"
     t.index ["exists_in_google"], name: "index_books_on_exists_in_google"
+    t.index ["exists_in_hathitrust", "exists_in_internet_archive", "exists_in_google"], name: "index_books_on_service_existence_columns"
     t.index ["exists_in_hathitrust"], name: "index_books_on_exists_in_hathitrust"
     t.index ["exists_in_internet_archive"], name: "index_books_on_exists_in_internet_archive"
     t.index ["hathitrust_access"], name: "index_books_on_hathitrust_access"
