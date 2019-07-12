@@ -16,7 +16,7 @@ class RecordSource
 
   def self.import_in_progress?
     Task.where(service: Service::LOCAL_STORAGE).
-        where('status IN (?)', [Status::WAITING, Status::RUNNING]).count > 0
+        where('status IN (?)', [Status::RUNNING]).count > 0
   end
 
   ##
