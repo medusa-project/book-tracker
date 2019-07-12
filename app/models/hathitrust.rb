@@ -36,11 +36,11 @@ class Hathitrust
       task = Task.create!(task_args)
     end
 
+    config = Configuration.instance
     pathname = nil
     begin
-      # TODO: can we read from the download stream rather than downloading to disk?
       pathname = get_hathifile(task)
-      nuc_code = Configuration.instance.library_nuc_code
+      nuc_code = config.library_nuc_code
 
       task.name = "Checking HathiTrust: Scanning the HathiFile for "\
       "#{nuc_code} records..."
@@ -70,6 +70,9 @@ class Hathitrust
           task.percent_complete = (index + 1).to_f / num_lines.to_f
           task.save!
         end
+        if index % config.analyze_interval == 0
+          Book.analyze_table
+        end
       end
     rescue SystemExit, Interrupt => e
       task.name = "HathiTrust check failed: #{e}"
@@ -90,7 +93,7 @@ class Hathitrust
       puts task.name
     ensure
       FileUtils.rm(pathname, force: true) if pathname.present?
-      ActiveRecord::Base.connection.execute('VACUUM ANALYZE;')
+      Book.analyze_table
     end
   end
 

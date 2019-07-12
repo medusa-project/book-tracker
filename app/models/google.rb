@@ -86,6 +86,9 @@ class Google
           task.update(name: "Checking Google: scanned #{index} records "\
                       "(no progress available)")
         end
+        if index % config.analyze_interval == 0
+          Book.analyze_table
+        end
       end
     rescue SystemExit, Interrupt => e
       task.name = "Google check failed: #{e}"
@@ -108,7 +111,7 @@ class Google
     ensure
       client.delete_object(bucket: config.temp_bucket,
                            key: @inventory_key)
-      ActiveRecord::Base.connection.execute('VACUUM ANALYZE;')
+      Book.analyze_table
     end
   end
 

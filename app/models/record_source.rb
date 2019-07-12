@@ -3,7 +3,6 @@
 #
 class RecordSource
 
-  ANALYZE_INTERVAL = 10000
   INSERT_BATCH_SIZE = 100
   MARCXML_NAMESPACES = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
 
@@ -93,8 +92,8 @@ class RecordSource
                     "(no progress available)")
                 print "#{task.name.ljust(80)}\r"
               end
-              if record_index % ANALYZE_INTERVAL == 0
-                analyze
+              if record_index % config.analyze_interval == 0
+                Book.analyze_table
               end
             end
           rescue => e
@@ -126,7 +125,7 @@ class RecordSource
                   status: Status::SUCCEEDED)
       puts task.name
     ensure
-      analyze
+      Book.analyze_table
     end
   end
 
@@ -169,13 +168,6 @@ class RecordSource
   end
 
   private
-
-  ##
-  # Runs an ANALYZE, useful to speed up queries after a lot of INSERTs/UPDATEs.
-  #
-  def analyze
-    ActiveRecord::Base.connection.execute('ANALYZE books;')
-  end
 
   def upsert(batch)
     Rails.logger.debug("RecordSource.upsert(): upserting #{batch.length} records")
