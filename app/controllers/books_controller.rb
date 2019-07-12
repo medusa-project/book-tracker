@@ -31,7 +31,7 @@ class BooksController < ApplicationController
         google: Task.where(service: Service::GOOGLE).
             where(status: Status::SUCCEEDED).last
     }
-    @dates.each{ |k, v| @dates[k] = v ? v.completed_at.strftime('%Y-%m-%d') : 'Never' }
+    @dates.each{ |k, v| @dates[k] = v&.completed_at }
 
     # query (q=)
     query = @allowed_params[:q]
