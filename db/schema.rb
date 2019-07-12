@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_12_183425) do
+ActiveRecord::Schema.define(version: 2019_07_12_184907) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -25,9 +25,9 @@ ActiveRecord::Schema.define(version: 2019_07_12_183425) do
     t.string "date"
     t.string "language"
     t.string "subject"
-    t.boolean "exists_in_hathitrust", default: false
-    t.boolean "exists_in_internet_archive", default: false
-    t.boolean "exists_in_google", default: false
+    t.boolean "exists_in_hathitrust", default: false, null: false
+    t.boolean "exists_in_internet_archive", default: false, null: false
+    t.boolean "exists_in_google", default: false, null: false
     t.string "ia_identifier"
     t.string "hathitrust_rights"
     t.string "hathitrust_access"
