@@ -70,9 +70,6 @@ class Hathitrust
           task.percent_complete = (index + 1).to_f / num_lines.to_f
           task.save!
         end
-        if index % config.analyze_interval == 0
-          Book.analyze_table
-        end
       end
     rescue SystemExit, Interrupt => e
       task.name = "HathiTrust check failed: #{e}"
@@ -93,7 +90,6 @@ class Hathitrust
       puts task.name
     ensure
       FileUtils.rm(pathname, force: true) if pathname.present?
-      Book.analyze_table
     end
   end
 

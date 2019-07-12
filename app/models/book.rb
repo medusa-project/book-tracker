@@ -15,14 +15,6 @@ class Book < ApplicationRecord
   before_save :truncate_values
 
   ##
-  # Sends an ANALYZE command to the books table, essential for keeping queries
-  # responsive after a lot of INSERTs/UPDATEs.
-  #
-  def self.analyze_table
-    ActiveRecord::Base.connection.execute('ANALYZE books;')
-  end
-
-  ##
   # Updates a batch of books in one SQL statement. This may be faster (due to
   # the table indexes) than loading and saving a bunch of Book objects.
   #

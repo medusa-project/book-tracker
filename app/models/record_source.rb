@@ -92,9 +92,6 @@ class RecordSource
                     "(no progress available)")
                 print "#{task.name.ljust(80)}\r"
               end
-              if record_index % config.analyze_interval == 0
-                Book.analyze_table
-              end
             end
           rescue => e
             # This is probably an undefined namespace prefix error, which means
@@ -124,8 +121,6 @@ class RecordSource
                                 record_index, num_invalid_files),
                   status: Status::SUCCEEDED)
       puts task.name
-    ensure
-      Book.analyze_table
     end
   end
 
