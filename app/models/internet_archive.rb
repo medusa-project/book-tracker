@@ -4,6 +4,9 @@
 #
 class InternetArchive
 
+  TASK_UPDATE_INTERVAL = 1000
+  UPDATE_BATCH_SIZE    = 1000
+
   ##
   # @return [Boolean] Whether an invocation of check() is authorized.
   #
@@ -19,7 +22,7 @@ class InternetArchive
     raise 'Another Internet Archive check is in progress.' unless self.class.check_authorized?
 
     task_args = {
-        name: 'Checking Internet Archive',
+        name: 'Checking Internet Archive: querying the API...',
         service: Service::INTERNET_ARCHIVE,
         status: Status::RUNNING
     }
@@ -31,50 +34,46 @@ class InternetArchive
       task = Task.create!(task_args)
     end
 
+    reported_num_items = actual_num_items = 0
+    ia_id_batch = []
+
     begin
       doc = get_api_results(task)
 
-      items_in_ia = 0
-      num_items = doc.xpath('//result/@numFound').first.content.to_i
+      reported_num_items = doc.xpath('//result/@numFound').first.content.to_i
 
-      task.name = 'Checking Internet Archive: Scanning the inventory for '\
-      'UIU records...'
-      task.save!
+      task.update!(name: 'Checking Internet Archive: scanning the inventory '\
+          'for UIU records...')
       puts task.name
 
       doc.xpath('//result/doc/str').each_with_index do |node, index|
-        book = Book.find_by_ia_identifier(node.content)
-        if book
-          book.exists_in_internet_archive = true
-          book.save!
-          items_in_ia += 1
-        end
+        actual_num_items += 1
+        ia_id_batch << node.content
+        set_existing_if_necessary(ia_id_batch)
 
-        if index % 500 == 0
-          task.percent_complete = (index + 1).to_f / num_items.to_f
-          task.save!
+        if index % TASK_UPDATE_INTERVAL == 0
+          task.update!(name: "Checking Internet Archive: scanned "\
+                             "#{actual_num_items} records...",
+                       percent_complete: (index + 1) / reported_num_items.to_f)
         end
       end
     rescue SystemExit, Interrupt => e
-      task.name = "Internet Archive check failed: #{e}"
-      task.status = Status::FAILED
-      task.save!
+      task.update!(name: "Internet Archive check failed: #{e}",
+                   status: Status::FAILED)
       puts task.name
       raise e
     rescue => e
-      task.name = "Internet Archive check failed: #{e}"
-      task.status = Status::FAILED
-      task.save!
+      task.update!(name: "Internet Archive check failed: #{e}",
+                   status: Status::FAILED)
       puts task.name
       raise e
     else
-      task.name = "Checking Internet Archive: Updated database with "\
-      "#{items_in_ia} found items."
-      task.status = Status::SUCCEEDED
-      task.save!
+      task.update!(name: "Checking Internet Archive: updated database with "\
+                         "#{actual_num_items} found items.",
+                   status: Status::SUCCEEDED)
       puts task.name
     ensure
-      ActiveRecord::Base.connection.execute('VACUUM ANALYZE;')
+      set_existing(ia_id_batch)
     end
   end
 
@@ -163,6 +162,21 @@ class InternetArchive
       end
     end
     File.open(expected_pathname) { |f| Nokogiri::XML(f) }
+  end
+
+  ##
+  # @param batch [Array<String>] Batch of IA identifiers.
+  # @return [void]
+  #
+  def set_existing(batch)
+    Book.bulk_update(batch, 'exists_in_internet_archive', 'true', 'ia_identifier')
+    Book.analyze_table
+  ensure
+    batch.clear
+  end
+
+  def set_existing_if_necessary(batch)
+    set_existing(batch) if batch.length >= UPDATE_BATCH_SIZE
   end
 
 end

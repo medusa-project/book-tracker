@@ -2,6 +2,21 @@ require 'test_helper'
 
 class BookTest < ActiveSupport::TestCase
 
+  test 'bulk_update works' do
+    b1 = books(:one)
+    b2 = books(:two)
+    b3 = books(:three)
+    assert !b1.exists_in_google and !b2.exists_in_google and !b3.exists_in_google
+
+    batch = [b1.obj_id, b2.obj_id]
+    Book.bulk_update(batch, 'exists_in_google', 'true', 'obj_id')
+    b1.reload
+    b2.reload
+    b3.reload
+    assert b1.exists_in_google and b2.exists_in_google
+    assert !b3.exists_in_google
+  end
+
   test 'bulk_upsert works' do
     Book.destroy_all
     rows = [

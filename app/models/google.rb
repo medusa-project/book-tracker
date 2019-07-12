@@ -1,12 +1,15 @@
 ##
-# Checks Google for bibliographic data using Google GRIN, and updates the
+# Checks Google Books for bibliographic data using Google GRIN, and updates the
 # corresponding local books with its findings.
 #
-# Access to GRIN is limited by IP address. If a request to
+# Access to GRIN is restricted to particular Google accounts. If a request to
 # https://books.google.com/libraries/UIUC/ returns HTTP 403, contact Jon
 # Gorman (jtgorman@illinois.edu) in Library IT to request access.
 #
 class Google
+
+  TASK_UPDATE_INTERVAL = 1000
+  UPDATE_BATCH_SIZE    = 1000
 
   ##
   # @return [Boolean] Whether an invocation of check() is authorized.
@@ -43,75 +46,66 @@ class Google
       task = Task.create!(task_args)
     end
 
-    bt_items_in_gb = new_bt_items_in_gb = num_skipped_lines = 0
-
     config = Configuration.instance
-    opts = {
-        region: config.aws_region,
-        force_path_style: true,
-        credentials: Aws::Credentials.new(config.aws_access_key_id,
-                                          config.aws_secret_access_key)
-    }
-    opts[:endpoint] = config.s3_endpoint if config.s3_endpoint.present?
-    client = Aws::S3::Client.new(opts)
+    client = get_client
+    obj_id_batch = []
 
     begin
+      # Count the number of lines in the file in order to display progress.
+      # This requires an extra download from S3, but that should only take a
+      # few extra seconds.
+      task.update(name: 'Checking Google: counting the inventory...')
+      num_lines = 0
       response = client.get_object(bucket: config.temp_bucket,
                                    key: @inventory_key)
-      # CSV columns:
-      # [0] barcode
-      # [1] scanned date
-      # [2] processed date
-      # [3] analyzed date
-      # [4] converted date
-      # [5] downloaded date
-      # Date format: yyyy-mm-dd hh:mm
+      response.body.each_line { num_lines += 1 }
+
+      # Iterate through the lines.
+      num_skipped_lines = 0
+      response = client.get_object(bucket: config.temp_bucket,
+                                   key: @inventory_key)
       response.body.each_line.with_index do |line, index|
         begin
+          # Columns:
+          # [0] barcode
+          # [1] scanned date
+          # [2] processed date
+          # [3] analyzed date
+          # [4] converted date
+          # [5] downloaded date
+          # Date format: yyyy-mm-dd hh:mm
           parts = CSV.parse_line(line, col_sep: "\t")
           if parts.any?
-            book = Book.find_by_obj_id(parts.first.strip)
-            if book
-              unless book.exists_in_google
-                book.update!(exists_in_google: true)
-                new_bt_items_in_gb += 1
-              end
-              bt_items_in_gb += 1
-            end
+            obj_id_batch << parts.first.strip
+            set_existing_if_necessary(obj_id_batch)
           end
         rescue
           num_skipped_lines += 1
         end
-        if index % 1000 == 0
-          task.update(name: "Checking Google: scanned #{index} records "\
-                      "(no progress available)")
-        end
-        if index % config.analyze_interval == 0
-          Book.analyze_table
+        if index % TASK_UPDATE_INTERVAL == 0
+          task.update(name: "Checking Google: scanned #{index} records",
+                      percent_complete: (index + 1) / num_lines.to_f)
         end
       end
     rescue SystemExit, Interrupt => e
-      task.name = "Google check failed: #{e}"
-      task.status = Status::FAILED
-      task.save!
+      task.update!(name: "Google check failed: #{e}",
+                   status: Status::FAILED)
       puts task.name
       raise e
     rescue => e
-      task.name = "Google check failed: #{e}"
-      task.status = Status::FAILED
-      task.save!
+      task.update!(name: "Google check failed: #{e}",
+                   status: Status::FAILED)
       puts task.name
     else
-      task.name = "Checking Google: Updated database with #{new_bt_items_in_gb} "\
-      "new items out of #{bt_items_in_gb} total book tracker items in "\
-      "Google; #{num_skipped_lines} lines malformed/skipped."
-      task.status = Status::SUCCEEDED
-      task.save!
+      task.update!(name: "Checking Google: updated database with #{num_lines} "\
+                         "found items; #{num_skipped_lines} lines "\
+                         "malformed/skipped.",
+                   status: Status::SUCCEEDED)
       puts task.name
     ensure
+      set_existing(obj_id_batch)
       client.delete_object(bucket: config.temp_bucket,
                            key: @inventory_key)
-      Book.analyze_table
     end
   end
 
@@ -151,6 +145,38 @@ class Google
         }
     }
     ecs.run_task(args)
+  end
+
+  private
+
+  def get_client
+    unless @client
+      config = Configuration.instance
+      opts = {
+          region: config.aws_region,
+          force_path_style: true,
+          credentials: Aws::Credentials.new(config.aws_access_key_id,
+                                            config.aws_secret_access_key)
+      }
+      opts[:endpoint] = config.s3_endpoint if config.s3_endpoint.present?
+      @client = Aws::S3::Client.new(opts)
+    end
+    @client
+  end
+
+  ##
+  # @param batch [Array<String>] Batch of object IDs.
+  # @return [void]
+  #
+  def set_existing(batch)
+    Book.bulk_update(batch, 'exists_in_google', 'true', 'obj_id')
+    Book.analyze_table
+  ensure
+    batch.clear
+  end
+
+  def set_existing_if_necessary(batch)
+    set_existing(batch) if batch.length >= UPDATE_BATCH_SIZE
   end
 
 end

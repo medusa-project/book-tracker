@@ -17,9 +17,25 @@ one:
   hathitrust_rights: MyString
 
 two:
-  bib_id: 1
+  bib_id: 2
   oclc_number: MyString
   obj_id: 002
+  title: MyString
+  author: MyString
+  volume: MyString
+  date: MyString
+  exists_in_hathitrust: false
+  ia_identifier: MyString
+  exists_in_internet_archive: false
+  raw_marcxml: MyText
+  exists_in_google: false
+  source_path: MyString
+  hathitrust_rights: MyString
+
+three:
+  bib_id: 3
+  oclc_number: MyString
+  obj_id: 003
   title: MyString
   author: MyString
   volume: MyString

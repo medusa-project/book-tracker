@@ -23,7 +23,41 @@ class Book < ApplicationRecord
   end
 
   ##
-  # Inserts or updates a batch of books in one SQL statement. This may be a lot
+  # Updates a batch of books in one SQL statement. This may be faster (due to
+  # the table indexes) than loading and saving a bunch of Book objects.
+  #
+  # @param batch [Set<Object>] Set of strings or integers.
+  # @param column [String] Column to update.
+  # @param new_value [Object] Value to set the column to.
+  # @param where_column [String] WHERE column.
+  # @return [void]
+  #
+  def self.bulk_update(batch, column, new_value, where_column)
+    length = batch.length
+    return unless length > 0
+
+    sql = StringIO.new
+    sql << sprintf('UPDATE books SET %s = %s WHERE %s IN (',
+                   column, new_value, where_column)
+    length.times do |index|
+      sql << "$#{index + 1}"
+      if index < length - 1
+        sql << ', '
+      end
+    end
+    sql << ');'
+
+    binds = batch.map{ |s| [nil, s] }
+
+    Rails.logger.debug("Book.bulk_update(): updating #{batch.length} records")
+    ActiveRecord::Base.connection.exec_query(sql.string, 'SQL', binds, prepare: true)
+  rescue => e
+    Rails.logger.error("Book.bulk_update(): #{e}\nSQL: #{sql.string}")
+    raise e
+  end
+
+  ##
+  # Inserts or updates a batch of books in one SQL statement. This may be
   # faster (due to the table indexes) than using one statement per book.
   #
   # @param rows [Enumerable<Hash<Symbol,Object>>] Enumerable of hashes with book
