@@ -172,6 +172,7 @@ class InternetArchive
   #
   def set_existing(batch)
     Book.bulk_update(batch, 'exists_in_internet_archive', 'true', 'ia_identifier')
+    Book.analyze_table
   ensure
     batch.clear
   end

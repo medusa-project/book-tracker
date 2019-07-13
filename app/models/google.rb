@@ -165,6 +165,7 @@ class Google
   #
   def set_existing(batch)
     Book.bulk_update(batch, 'exists_in_google', 'true', 'obj_id')
+    Book.analyze_table
   ensure
     batch.clear
   end

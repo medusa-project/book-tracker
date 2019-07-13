@@ -87,6 +87,7 @@ class Hathitrust
       puts task.name
     ensure
       FileUtils.rm(pathname, force: true) if pathname.present?
+      Book.analyze_table
     end
   end
 

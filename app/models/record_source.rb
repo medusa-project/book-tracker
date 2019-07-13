@@ -121,6 +121,8 @@ class RecordSource
                                 record_index, num_invalid_files),
                   status: Task::Status::SUCCEEDED)
       puts task.name
+    ensure
+      Book.analyze_table
     end
   end
 

@@ -15,6 +15,14 @@ class Book < ApplicationRecord
   before_save :truncate_values
 
   ##
+  # Sends a VACUUM ANALYZE command to the books table, helpful for keeping
+  # queries responsive after a lot of UPDATEs.
+  #
+  def self.analyze_table
+    ActiveRecord::Base.connection.execute('VACUUM ANALYZE books;')
+  end
+
+  ##
   # Returns an estimated count of all rows in the books table. Much faster than
   # a COUNT query with no WHERE clause.
   #
