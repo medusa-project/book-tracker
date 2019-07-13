@@ -15,6 +15,18 @@ class Book < ApplicationRecord
   before_save :truncate_values
 
   ##
+  # Returns an estimated count of all rows in the books table. Much faster than
+  # a COUNT query with no WHERE clause.
+  #
+  # @return [Integer]
+  #
+  def self.approximate_count
+    Book.connection.exec_query('SELECT reltuples::bigint AS count '\
+                               'FROM pg_class '\
+                               'WHERE relname = \'books\';')[0]['count']
+  end
+
+  ##
   # Updates a batch of books in one SQL statement. This may be faster (due to
   # the table indexes) than loading and saving a bunch of Book objects.
   #

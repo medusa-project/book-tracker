@@ -22,20 +22,23 @@ class BooksController < ApplicationController
     @missing_ids = []
 
     @dates = {
-        local_storage: Task.where(service: Service::LOCAL_STORAGE).
-            where(status: Task::Status::SUCCEEDED).last,
-        hathitrust: Task.where(service: Service::HATHITRUST).
-            where(status: Task::Status::SUCCEEDED).last,
-        internet_archive: Task.where(service: Service::INTERNET_ARCHIVE).
-            where(status: Task::Status::SUCCEEDED).last,
-        google: Task.where(service: Service::GOOGLE).
-            where(status: Task::Status::SUCCEEDED).last
+        local_storage:    Task.where(service: Service::LOCAL_STORAGE)
+                              .where(status: Task::Status::SUCCEEDED).last,
+        hathitrust:       Task.where(service: Service::HATHITRUST)
+                              .where(status: Task::Status::SUCCEEDED).last,
+        internet_archive: Task.where(service: Service::INTERNET_ARCHIVE)
+                              .where(status: Task::Status::SUCCEEDED).last,
+        google:           Task.where(service: Service::GOOGLE)
+                              .where(status: Task::Status::SUCCEEDED).last
     }
     @dates.each{ |k, v| @dates[k] = v&.completed_at }
+
+    any_filters = false
 
     # query (q=)
     query = @allowed_params[:q]
     if query.present?
+      any_filters = true
       lines = query.strip.split("\n")
       # If >1 line, assume a list of bib and/or object IDs.
       if lines.length > 1
@@ -86,6 +89,7 @@ class BooksController < ApplicationController
       # N.B.: the order of these WHERE conditions are aligned with the compound
       # index on these three columns in the database.
       if @allowed_params[:in].respond_to?(:each)
+        any_filters = true
         @allowed_params[:in].each do |service|
           case service
             when 'ht'
@@ -98,6 +102,7 @@ class BooksController < ApplicationController
         end
       end
       if @allowed_params[:ni].respond_to?(:each)
+        any_filters = true
         @allowed_params[:ni].each do |service|
           case service
             when 'ht'
@@ -116,6 +121,7 @@ class BooksController < ApplicationController
     # (https://github.com/medusa-project/metaslurper).
     # It uses a query that the web UI can't generate.
     if @allowed_params[:harvest] == 'true'
+      any_filters = true
       # Exclude Hathitrust-restricted books (DLDS-70)
       @books = @books.where('hathitrust_access != ?', 'deny')
 
@@ -141,7 +147,16 @@ class BooksController < ApplicationController
     @allowed_params.permit!
     @next_page_url = books_path(@allowed_params.merge(page: next_page))
 
-    @count = @books.count
+    # COUNT queries are inherently slow in Postgres (see
+    # https://wiki.postgresql.org/wiki/Slow_Counting). If there are no filters,
+    # we can use PG's estimated count instead.
+    if any_filters
+      @count = @books.count
+      @count_is_approximate = false
+    else
+      @count = Book.approximate_count
+      @count_is_approximate = true
+    end
 
     if request.xhr?
       @books = @books.paginate(page: page, per_page: RESULTS_LIMIT)
