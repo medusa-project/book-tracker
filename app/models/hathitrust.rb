@@ -42,9 +42,7 @@ class Hathitrust
       pathname = get_hathifile(task)
       nuc_code = config.library_nuc_code
 
-      task.name = "Checking HathiTrust: Scanning the HathiFile for "\
-      "#{nuc_code} records..."
-      task.save!
+      task.update!(name: 'Checking HathiTrust: scanning the HathiFile...')
       puts task.name
 
       num_lines = File.foreach(pathname).count
@@ -72,18 +70,17 @@ class Hathitrust
         end
       end
     rescue SystemExit, Interrupt => e
-      task.name = "HathiTrust check failed: #{e}"
-      task.status = Task::Status::FAILED
-      task.save!
+      task.update!(name: "HathiTrust check failed: #{e}",
+                   status: Task::Status::FAILED)
       puts task.name
       raise e
     rescue => e
-      task.name = "HathiTrust check failed: #{e}"
-      task.status = Task::Status::FAILED
-      task.save!
-      puts task.name
+      Rails.logger.error("Hathitrust.check(): #{e}")
+      task.update!(name: "HathiTrust check failed: #{e}",
+                   status: Task::Status::FAILED)
+      raise e
     else
-      task.name = "Checking HathiTrust: Updated database with "\
+      task.name = "Checking HathiTrust: updated database with "\
         "#{Book.where(exists_in_hathitrust: true).count} found items."
       task.status = Task::Status::SUCCEEDED
       task.save!
@@ -141,34 +138,36 @@ class Hathitrust
   def get_hathifile(task)
     # As there is no single URI for the latest HathiFile, we have to scrape
     # the HathiFile listing out of the index HTML page.
-    task.name = 'Getting HathiFile index...'
-    task.save!
+    task.update!(name: 'Checking HathiTrust: downloading HathiFile index...')
     puts task.name
 
-    uri = URI.parse('https://www.hathitrust.org/hathifiles')
+    uri      = URI.parse('https://www.hathitrust.org/hathifiles')
     response = Net::HTTP.get_response(uri)
-    page = Nokogiri::HTML(response.body)
+    page     = Nokogiri::HTML(response.body)
 
     # Scrape the URI of the latest HathiFile out of the index
     node = page.css('div#content-area table.sticky-enabled a').
         select{ |h| h.text.start_with?('hathi_full_') }.
         sort{ |x,y| x.text <=> y.text }.reverse[0]
-    uri = node['href']
-    gz_filename = node.text
+    uri          = node['href']
+    gz_filename  = node.text
     txt_filename = gz_filename.chomp('.gz')
-    gz_pathname = File.join(TEMP_DIR, gz_filename)
+    gz_pathname  = File.join(TEMP_DIR, gz_filename)
     txt_pathname = File.join(TEMP_DIR, txt_filename)
 
     # If we already have it, return its pathname instead of downloading it.
     return txt_pathname if File.exists?(txt_pathname)
 
     # Otherwise, delete any older HathiFiles that may exist, as they are now
-    # out-of-date
+    # out-of-date.
+    # (This code is from when the application ran in a persistent VM; now
+    # that it runs in ephemeral containers, it's not needed anymore, but it
+    # doesn't hurt.)
     Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
         each { |f| File.delete(f) }
 
     # And progressively download the new one (because it's big)
-    task.name = "Checking HathiTrust: Downloading the latest HathiFile "\
+    task.name = "Checking HathiTrust: downloading the latest HathiFile "\
     "(#{gz_filename})..."
     task.save!
     puts task.name
@@ -182,7 +181,7 @@ class Hathitrust
       end
     end
 
-    task.name = 'Checking HathiTrust: Unzipping the HathiFile...'
+    task.name = 'Checking HathiTrust: unzipping the HathiFile...'
     task.save!
     puts task.name
     `gunzip #{gz_pathname}`

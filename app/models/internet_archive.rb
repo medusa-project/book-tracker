@@ -63,9 +63,9 @@ class InternetArchive
       puts task.name
       raise e
     rescue => e
+      Rails.logger.error("InternetArchive.check(): #{e}")
       task.update!(name: "Internet Archive check failed: #{e}",
                    status: Task::Status::FAILED)
-      puts task.name
       raise e
     else
       task.update!(name: "Checking Internet Archive: updated database with "\
@@ -125,16 +125,18 @@ class InternetArchive
   #
   def get_api_results(task)
     expected_filename = "ia_results_#{Date.today.strftime('%Y%m%d')}.xml"
-    cache_pathname = Rails.root.join('tmp')
+    cache_pathname    = Rails.root.join('tmp')
     expected_pathname = File.join(cache_pathname, expected_filename)
 
     unless File.exists?(expected_pathname)
-      # Delete older downloads
+      # Delete older downloads.
+      # (This code is from when the application ran in a persistent VM; now
+      # that it runs in ephemeral containers, it's not needed anymore, but it
+      # doesn't hurt.)
       Dir.glob(File.join(cache_pathname, 'ia_results_*')).
           each{ |f| File.delete(f) }
 
-      task.name = 'Checking Internet Archive: Downloading UIUC inventory'
-      task.save!
+      task.update!(name: 'Checking Internet Archive: downloading the UIUC inventory')
       puts task.name
 
       # https://archive.org/advancedsearch.php
@@ -147,7 +149,7 @@ class InternetArchive
 
       FileUtils.mkdir_p(cache_pathname)
       begin
-        puts "Getting #{uri}"
+        Rails.logger.info("InternetArchive.get_api_results(): GET #{uri}")
         Net::HTTP.get_response(uri) do |res|
           res.read_body do |chunk|
             File.open(expected_pathname, 'ab') do |file|
@@ -156,7 +158,7 @@ class InternetArchive
           end
         end
       rescue => e
-        puts "#{e}"
+        Rails.logger.error("InternetArchive.get_api_results(): #{e}")
         File.delete(expected_pathname) if File.exists?(expected_pathname)
         raise e
       end

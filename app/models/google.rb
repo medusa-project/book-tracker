@@ -61,26 +61,21 @@ class Google
       response.body.each_line { num_lines += 1 }
 
       # Iterate through the lines.
-      num_skipped_lines = 0
       response = client.get_object(bucket: config.temp_bucket,
                                    key: @inventory_key)
       response.body.each_line.with_index do |line, index|
-        begin
-          # Columns:
-          # [0] barcode
-          # [1] scanned date
-          # [2] processed date
-          # [3] analyzed date
-          # [4] converted date
-          # [5] downloaded date
-          # Date format: yyyy-mm-dd hh:mm
-          parts = CSV.parse_line(line, col_sep: "\t")
-          if parts.any?
-            obj_id_batch << parts.first.strip
-            set_existing_if_necessary(obj_id_batch)
-          end
-        rescue
-          num_skipped_lines += 1
+        # Columns:
+        # [0] barcode
+        # [1] scanned date
+        # [2] processed date
+        # [3] analyzed date
+        # [4] converted date
+        # [5] downloaded date
+        # Date format: yyyy-mm-dd hh:mm
+        parts = CSV.parse_line(line, col_sep: "\t")
+        if parts.any?
+          obj_id_batch << parts.first.strip
+          set_existing_if_necessary(obj_id_batch)
         end
         if index % TASK_UPDATE_INTERVAL == 0
           task.update(name: "Checking Google: scanned #{index} records",
@@ -93,13 +88,13 @@ class Google
       puts task.name
       raise e
     rescue => e
+      Rails.logger.error("Google.check(): #{e}")
       task.update!(name: "Google check failed: #{e}",
                    status: Task::Status::FAILED)
-      puts task.name
+      raise e
     else
       task.update!(name: "Checking Google: updated database with #{num_lines} "\
-                         "found items; #{num_skipped_lines} lines "\
-                         "malformed/skipped.",
+                         "found items.",
                    status: Task::Status::SUCCEEDED)
       puts task.name
     ensure
