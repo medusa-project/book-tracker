@@ -150,13 +150,13 @@ class BooksController < ApplicationController
     # COUNT queries are inherently slow in Postgres (see
     # https://wiki.postgresql.org/wiki/Slow_Counting). If there are no filters,
     # we can use PG's estimated count instead.
-    if any_filters
+    #if any_filters
       @count = @books.count
       @count_is_approximate = false
-    else
-      @count = Book.approximate_count
-      @count_is_approximate = true
-    end
+    #else
+    #  @count = Book.approximate_count
+    #  @count_is_approximate = true
+    #end
 
     if request.xhr?
       @books = @books.paginate(page: page, per_page: RESULTS_LIMIT)
