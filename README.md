@@ -26,18 +26,23 @@ tasks invoked via the ECS API.
 ## Prepare a development environment
 
 ```bash
-# Install RVM
-$ \curl -sSL https://get.rvm.io | bash -s stable
-$ source ~/.bash_profile
+# Install rbenv
+
+$ brew install rbenv
+$ brew install ruby-build
+$ brew install rbenv-gemset --HEAD
+$ rbenv init
+$ rbenv rehash
 
 # Clone the repository
 $ git clone https://github.com/medusa-project/book-tracker.git
 $ cd book-tracker
 
-# Install Ruby into RVM
-# (Note: `.ruby-version` is used by RVM, but RVM isn't used in Docker, so the
-# version it contains must be kept in sync with the one used in the Dockerfile.)
-$ rvm install "$(< .ruby-version)" --autolibs=0
+# Install Ruby into rbenv
+# (Note: `.ruby-version` is used by rbenv, but rbenv isn't used in Docker, so
+# the version it contains must be kept in sync with the one used in the
+# Dockerfile.)
+$ rbenv install "$(< .ruby-version)"
 
 # Install Bundler
 $ gem install bundler
