@@ -94,13 +94,19 @@ class Book < ApplicationRecord
       sql << ',' if index < rows.length - 1
     end
 
+    not_null_bool_cols = %w(exists_in_google
+        exists_in_hathitrust exists_in_internet_archive)
+
     binds = []
     rows.each do |row|
       row[:created_at] = 'NOW()'
       row[:updated_at] = 'NOW()'
       COLUMNS.each do |col|
         value = row[col.to_sym]
-        binds << [nil, value.present? ? value : nil]
+        if value.blank?
+          value = not_null_bool_cols.include?(col) ? false : nil
+        end
+        binds << [nil, value]
       end
     end
 
