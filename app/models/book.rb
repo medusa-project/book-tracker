@@ -112,10 +112,11 @@ class Book < ApplicationRecord
 
     sql << "\nON CONFLICT (obj_id) DO\n"
     sql << "UPDATE SET\n\t"
-    cols = COLUMNS.reject{ |c| c == 'created_at' }
+    cols = COLUMNS.reject{ |c| %w(created_at exists_in_hathitrust
+        exists_in_internet_archive exists_in_google hathitrust_access).include?(c) }
     cols.each_with_index do |col, index|
       sql << col
-      sql << ' = excluded.'
+      sql << ' = EXCLUDED.'
       sql << col
       sql << ', ' if index < cols.length - 1
     end
