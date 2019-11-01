@@ -159,16 +159,16 @@ class BooksController < ApplicationController
     #end
 
     if request.xhr?
-      @books = @books.paginate(page: page, per_page: WINDOW_SIZE)
+      @books = @books.offset(page * WINDOW_SIZE).limit(WINDOW_SIZE)
       render partial: 'book_rows', locals: { books: @books,
                                              next_page_url: @next_page_url }
     else
       respond_to do |format|
         format.html do
-          @books = @books.paginate(page: page, per_page: WINDOW_SIZE)
+          @books = @books.offset(page * WINDOW_SIZE).limit(WINDOW_SIZE)
         end
         format.json do
-          @books = @books.paginate(page: page, per_page: WINDOW_SIZE)
+          @books = @books.offset(page * WINDOW_SIZE).limit(WINDOW_SIZE)
           @books.each{ |book| book.url = url_for(book) }
           render json: {
               numResults: @count,
