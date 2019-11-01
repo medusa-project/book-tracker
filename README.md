@@ -15,7 +15,8 @@ tasks invoked via the ECS API.
 
 # Quick links
 
-* [JIRA board](https://bugs.library.illinois.edu/projects/MBT)
+* [SCARS Wiki](https://wiki.illinois.edu/wiki/display/scrs/Book+Tracker)
+* [JIRA project](https://bugs.library.illinois.edu/projects/MBT)
 
 # Dependencies
 
@@ -39,9 +40,6 @@ $ git clone https://github.com/medusa-project/book-tracker.git
 $ cd book-tracker
 
 # Install Ruby into rbenv
-# (Note: `.ruby-version` is used by rbenv, but rbenv isn't used in Docker, so
-# the version it contains must be kept in sync with the one used in the
-# Dockerfile.)
 $ rbenv install "$(< .ruby-version)"
 
 # Install Bundler
@@ -109,9 +107,7 @@ $ bin/rails credentials:edit
 Then, use the `rails-container-scripts` to build and deploy, typically via:
 
 ```bash
-$ rails-container-scripts/docker-build.sh [demo or production]
-$ rails-container-scripts/ecr-push.sh [demo or production]
-$ rails-container-scripts/ecs-deploy-webapp.sh [demo or production]
+$ rails-container-scripts/redeploy.sh <demo or production>
 ```
 
 ## Import books & check tasks
