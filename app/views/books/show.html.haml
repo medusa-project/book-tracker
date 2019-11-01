@@ -17,18 +17,18 @@
 
   .col-sm-3
     .btn-group.float-right{role: 'group'}
-      %button.btn.btn-light.dropdown-toggle{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :type => "button"}
-        View In&hellip;
-      .dropdown-menu.dropdown-menu-right
-        = link_to('UIUC Catalog', @book.uiuc_catalog_url, target: '_blank', type: 'button',
-            class: 'dropdown-item')
-        = link_to('HathiTrust', @book.hathitrust_handle, target: '_blank', type: 'button',
-            class: 'dropdown-item ' + (@book.exists_in_hathitrust ? '' : 'disabled'))
-        = link_to('Internet Archive', @book.internet_archive_url, target: '_blank', type: 'button',
-            class: 'dropdown-item ' + (@book.exists_in_internet_archive ? '' : 'disabled'))
-
+      .btn-group{role: 'group'}
+        %button.btn.btn-light.dropdown-toggle{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :type => "button"}
+          View In&hellip;
+        .dropdown-menu.dropdown-menu-right
+          = link_to('UIUC Catalog', @book.uiuc_catalog_url, target: '_blank',
+              class: 'dropdown-item')
+          = link_to('HathiTrust', @book.hathitrust_handle, target: '_blank',
+              class: 'dropdown-item ' + (@book.exists_in_hathitrust ? '' : 'disabled'))
+          = link_to('Internet Archive', @book.internet_archive_url, target: '_blank',
+              class: 'dropdown-item ' + (@book.exists_in_internet_archive ? '' : 'disabled'))
       = link_to('JSON', book_path(@book, format: :json),
-                    class: 'btn btn-light', type: 'button', target: '_blank')
+                    class: 'btn btn-light', target: '_blank')
 .row
   .col-sm-8
     .card
