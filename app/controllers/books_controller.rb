@@ -1,6 +1,6 @@
 class BooksController < ApplicationController
 
-  RESULTS_LIMIT = 100
+  WINDOW_SIZE = 50
 
   protect_from_forgery except: :index
 
@@ -159,21 +159,21 @@ class BooksController < ApplicationController
     #end
 
     if request.xhr?
-      @books = @books.paginate(page: page, per_page: RESULTS_LIMIT)
+      @books = @books.paginate(page: page, per_page: WINDOW_SIZE)
       render partial: 'book_rows', locals: { books: @books,
                                              next_page_url: @next_page_url }
     else
       respond_to do |format|
         format.html do
-          @books = @books.paginate(page: page, per_page: RESULTS_LIMIT)
+          @books = @books.paginate(page: page, per_page: WINDOW_SIZE)
         end
         format.json do
-          @books = @books.paginate(page: page, per_page: RESULTS_LIMIT)
+          @books = @books.paginate(page: page, per_page: WINDOW_SIZE)
           @books.each{ |book| book.url = url_for(book) }
           render json: {
               numResults: @count,
-              windowSize: RESULTS_LIMIT,
-              windowOffset: (page - 1) * RESULTS_LIMIT,
+              windowSize: WINDOW_SIZE,
+              windowOffset: (page - 1) * WINDOW_SIZE,
               results: @books
           }, except: :raw_marcxml
         end
