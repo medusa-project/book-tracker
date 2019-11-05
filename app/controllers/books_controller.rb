@@ -66,8 +66,11 @@ class BooksController < ApplicationController
         end
       else
         q = query.strip
-        if q.to_i.to_s == q # if the query is number
-          @books = @books.where('bib_id = ? OR oclc_number = ?', q, q)
+        qi = q.to_i
+        if q == qi.to_s and qi < 2**31 # if the query is an integer
+          @books = @books.where('bib_id = ? OR obj_id = ?', q, q)
+        elsif q == qi.to_s # if the query is a non-integer number
+          @books = @books.where('obj_id = ?', q)
         else
           q = "%#{query.strip}%"
           @books = @books.where('CAST(bib_id AS VARCHAR(10)) LIKE ? '\
@@ -158,22 +161,24 @@ class BooksController < ApplicationController
     #  @count_is_approximate = true
     #end
 
+    offset = (page - 1) * WINDOW_SIZE
+
     if request.xhr?
-      @books = @books.offset(page * WINDOW_SIZE).limit(WINDOW_SIZE)
+      @books = @books.offset(offset).limit(WINDOW_SIZE)
       render partial: 'book_rows', locals: { books: @books,
                                              next_page_url: @next_page_url }
     else
       respond_to do |format|
         format.html do
-          @books = @books.offset(page * WINDOW_SIZE).limit(WINDOW_SIZE)
+          @books = @books.offset(offset).limit(WINDOW_SIZE)
         end
         format.json do
-          @books = @books.offset(page * WINDOW_SIZE).limit(WINDOW_SIZE)
+          @books = @books.offset(offset).limit(WINDOW_SIZE)
           @books.each{ |book| book.url = url_for(book) }
           render json: {
               numResults: @count,
+              windowOffset: offset,
               windowSize: WINDOW_SIZE,
-              windowOffset: (page - 1) * WINDOW_SIZE,
               results: @books
           }, except: :raw_marcxml
         end
