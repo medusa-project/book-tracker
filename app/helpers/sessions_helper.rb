@@ -6,7 +6,9 @@ module SessionsHelper
 
   def current_user
     unless session[:user].nil?
-      @current_user = User.find(session[:user])
+      @current_user = User.new.tap do |u|
+        u.username = session[:user]
+      end
     end
   end
 
@@ -15,7 +17,7 @@ module SessionsHelper
   end
 
   def sign_in(user)
-    session[:user] = user.id
+    session[:user] = user.username
     self.current_user = user
   end
 

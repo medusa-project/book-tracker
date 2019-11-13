@@ -55,17 +55,14 @@ $ bin/rails credentials:edit
 # Create and seed the database
 $ bin/rails db:setup
 
-# Add a user
-$ bin/rails users:create <username>
-
 # Start the server
 $ bin/rails server
 ```
 
 ## Sign in
 
-Navigate to `/signin` and sign in as the user you created, using
-`username@example.org` as the password.
+Navigate to `/signin` and sign in as `admin` using `admin@example.org` as the
+password.
 
 ## Import books
 
@@ -89,7 +86,7 @@ production and demo environments:
 * [Demo](https://code.library.illinois.edu/projects/TER/repos/aws-book-tracker-demo-service/browse)
 * [Production](https://code.library.illinois.edu/projects/TER/repos/aws-book-tracker-prod-service/browse)
 
-These scripts *don't* provision the RDS instances or the IAM application user,
+These scripts don't provision the RDS instances or the IAM application user,
 which must be done manually.
 
 Note that the task definition must contain the following environment variables:

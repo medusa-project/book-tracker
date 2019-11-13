@@ -10,8 +10,11 @@ class SessionsController < ApplicationController
     auth_hash = request.env['omniauth.auth']
     if auth_hash and auth_hash[:uid]
       username = auth_hash[:uid].split('@').first
-      user = User.find_by_username(username)
-      if user
+      user = User.new.tap do |u|
+        u.username = username
+      end
+      # `admin` is used in development.
+      if user.username == 'admin' or user.medusa_admin?
         return_url = clear_and_return_return_path
         sign_in user
         # We can access other information via auth_hash[:extra][:raw_info][key]
@@ -21,7 +24,9 @@ class SessionsController < ApplicationController
         return
       end
     end
-    flash['error'] = 'Sign-in failed.'
+    flash['error'] = sprintf('Sign-in failed. Ensure that you are a member '\
+                             'of the %s AD group.',
+                             Configuration.instance.medusa_admins_group)
     redirect_to root_url
   end
 

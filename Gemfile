@@ -13,6 +13,7 @@ gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
 gem 'local_time'
 gem 'mini_racer', platforms: :ruby
+gem 'net-ldap'
 gem 'omniauth'
 gem 'omniauth-shibboleth'
 gem 'pg'
