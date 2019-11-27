@@ -32,7 +32,7 @@ class SessionsController < ApplicationController
 
   def destroy
     sign_out
-    redirect_back fallback_location: root_path
+    redirect_to root_url
   end
 
   ##
