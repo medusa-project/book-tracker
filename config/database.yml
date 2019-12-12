@@ -1,41 +1,54 @@
+##
+# N.B.: Connection settings should not be edited in this file. See
+# app/config/configuration.rb.
+#
+
+<%
+path = File.join(Rails.root, 'config', 'credentials', 'development.yml')
+development_config = File.exists?(path) ? YAML.load(File.read(path)) : {}
+path = File.join(Rails.root, 'config', 'credentials', 'test.yml')
+test_config = File.exists?(path) ? YAML.load(File.read(path)) : {}
+%>
+
 default: &default
   adapter:  postgresql
   encoding: unicode
   pool:     <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout:  5000
+  min_messages: warning
   template: template0
 
 development:
   <<: *default
-  host:     <%= Rails.application.credentials.dig(:development, :db_host) %>
-  port:     <%= Rails.application.credentials.dig(:development, :db_port) %>
-  database: <%= Rails.application.credentials.dig(:development, :db_database) %>
-  username: <%= Rails.application.credentials.dig(:development, :db_username) %>
-  password: "<%= Rails.application.credentials.dig(:development, :db_password) %>"
+  host:     <%= development_config['db_host'] %>
+  port:     <%= development_config['db_port'] %>
+  database: <%= development_config['db_database'] %>
+  username: <%= development_config['db_username'] %>
+  password: <%= development_config['db_password'] %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  host:     <%= Rails.application.credentials.dig(:test, :db_host) %>
-  port:     <%= Rails.application.credentials.dig(:test, :db_port) %>
-  database: <%= Rails.application.credentials.dig(:test, :db_database) %>
-  username: <%= Rails.application.credentials.dig(:test, :db_username) %>
-  password: "<%= Rails.application.credentials.dig(:test, :db_password) %>"
+  host:     <%= test_config['db_host'] %>
+  port:     <%= test_config['db_port'] %>
+  database: <%= test_config['db_database'] %>
+  username: <%= test_config['db_username'] %>
+  password: <%= test_config['db_password'] %>
 
 demo:
   <<: *default
-  host:     <%= Rails.application.credentials.dig(:demo, :db_host) %>
-  port:     <%= Rails.application.credentials.dig(:demo, :db_port) %>
-  database: <%= Rails.application.credentials.dig(:demo, :db_database) %>
-  username: <%= Rails.application.credentials.dig(:demo, :db_username) %>
-  password: "<%= Rails.application.credentials.dig(:demo, :db_password) %>"
+  host:     <%= Rails.application.credentials.dig(:db_host) %>
+  port:     <%= Rails.application.credentials.dig(:db_port) %>
+  database: <%= Rails.application.credentials.dig(:db_database) %>
+  username: <%= Rails.application.credentials.dig(:db_username) %>
+  password: <%= Rails.application.credentials.dig(:db_password) %>
 
 production:
   <<: *default
-  host:     <%= Rails.application.credentials.dig(:production, :db_host) %>
-  port:     <%= Rails.application.credentials.dig(:production, :db_port) %>
-  database: <%= Rails.application.credentials.dig(:production, :db_database) %>
-  username: <%= Rails.application.credentials.dig(:production, :db_username) %>
-  password: "<%= Rails.application.credentials.dig(:production, :db_password) %>"
+  host:     <%= Rails.application.credentials.dig(:db_host) %>
+  port:     <%= Rails.application.credentials.dig(:db_port) %>
+  database: <%= Rails.application.credentials.dig(:db_database) %>
+  username: <%= Rails.application.credentials.dig(:db_username) %>
+  password: <%= Rails.application.credentials.dig(:db_password) %>

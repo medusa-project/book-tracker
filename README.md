@@ -35,8 +35,8 @@ $ brew install rbenv-gemset --HEAD
 $ rbenv init
 $ rbenv rehash
 
-# Clone the repository
-$ git clone https://github.com/medusa-project/book-tracker.git
+# Clone the repository and submodules
+$ git clone --recurse-submodules https://github.com/medusa-project/book-tracker.git
 $ cd book-tracker
 
 # Install Ruby into rbenv
@@ -49,8 +49,9 @@ $ gem install bundler
 $ bundle install
 
 # Configure the application
-# After acquiring config/master.key from someone on the project team:
-$ bin/rails credentials:edit
+$ cp config/credentials/template.yml config/credentials/development.yml
+$ cp config/credentials/template.yml config/credentials/test.yml
+# (Fill in both of the above files.)
 
 # Create and seed the database
 $ bin/rails db:setup
@@ -80,28 +81,26 @@ $ bin/rails books:check_internet_archive
 
 # Production
 
-At UIUC, there are separate sets of Terraform scripts that provision the
-production and demo environments:
+At UIUC, this application runs in AWS ECS. There are separate sets of Terraform
+scripts that provision the demo and production environments:
 
 * [Demo](https://code.library.illinois.edu/projects/TER/repos/aws-book-tracker-demo-service/browse)
 * [Production](https://code.library.illinois.edu/projects/TER/repos/aws-book-tracker-prod-service/browse)
 
-These scripts don't provision the RDS instances or the IAM application user,
-which must be done manually.
-
-Note that the task definition must contain the following environment variables:
-
-* `RAILS_ENV` (`demo` or `production`)
-* `SHIBBOLETH_HOST`
+(These scripts don't provision the RDS instances or the IAM application user,
+which must be done manually.)
 
 The application configuration also must be updated with all of the necessary
 information:
 
 ```bash
-$ bin/rails credentials:edit
+$ bin/rails credentials:edit -e demo
+$ bin/rails credentials:edit -e production
 ```
 
-Then, use the `rails-container-scripts` to build and deploy, typically via:
+Then, use the `rails-container-scripts` submodule to build and deploy. These
+are basically just wrapper scripts around Docker and
+[awscli](https://aws.amazon.com/cli/), so those must be installed first.
 
 ```bash
 $ rails-container-scripts/redeploy.sh <demo or production>
@@ -110,4 +109,4 @@ $ rails-container-scripts/redeploy.sh <demo or production>
 ## Import books & check tasks
 
 The buttons in the web interface at `/tasks` send requests to the ECS API
-to start tasks that invoke these various commands and then exit.
+to start tasks that invoke the various `books:*` rake tasks and then exit.
