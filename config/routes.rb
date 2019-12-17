@@ -22,5 +22,6 @@ Rails.application.routes.draw do
 
   # Dedicated health check URL because `/` returns 3xx
   match '/health', to: 'health#check', via: :get
+  match '/error', to: 'health#error', via: :get
 
 end
