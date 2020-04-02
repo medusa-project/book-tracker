@@ -26,7 +26,7 @@ class SessionsController < ApplicationController
     end
     flash['error'] = sprintf('Sign-in failed. Ensure that you are a member '\
                              'of the %s AD group.',
-                             Configuration.instance.medusa_admins_group)
+                             ::Configuration.instance.medusa_admins_group)
     redirect_to root_url
   end
 
