@@ -7,6 +7,7 @@ gem 'autoprefixer-rails'
 gem 'aws-sdk-ecs', '~> 1' # used to invoke async tasks
 gem 'aws-sdk-s3', '~> 1'  # used to access the bucket containing MARCXML records
 gem 'csv_builder'
+gem "font-awesome-sass", "~> 5.6" # Provides all of our icons
 gem 'haml'
 gem 'haml-rails'
 gem 'jbuilder', '~> 2.5'
