@@ -3,9 +3,9 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.6.2'
 
+gem 'autoprefixer-rails'
 gem 'aws-sdk-ecs', '~> 1' # used to invoke async tasks
 gem 'aws-sdk-s3', '~> 1'  # used to access the bucket containing MARCXML records
-gem 'bootstrap', '~> 4.3'
 gem 'csv_builder'
 gem 'haml'
 gem 'haml-rails'
@@ -19,6 +19,8 @@ gem 'pg'
 gem 'puma'
 gem 'rails', '~> 6.0.1'
 gem 'sassc'
+gem 'scars-bootstrap-theme', github: 'medusa-project/scars-bootstrap-theme',
+    branch: 'release/bootstrap-4.4'
 gem 'uglifier', '>= 1.3.0'
 
 group :development do
