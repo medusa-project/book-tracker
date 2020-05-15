@@ -3,13 +3,13 @@ module TasksHelper
   def bootstrap_class_for_status(status)
     case status
       when Task::Status::SUCCEEDED
-        'text-success'
+        'badge-success'
       when Task::Status::FAILED
-        'text-danger'
+        'badge-danger'
       when Task::Status::RUNNING
-        'text-primary'
+        'badge-primary'
       when Task::Status::PAUSED
-        'text-info'
+        'badge-info'
     end
   end
 

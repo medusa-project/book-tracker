@@ -12,11 +12,11 @@
         %span.navbar-toggler-icon
       #navbarColor01.collapse.navbar-collapse
         %ul.navbar-nav.mr-auto
-          %li#books-nav.nav-item
+          %li#books-nav.nav-item{class: yield(:nav_section) == "books" ? "active" : nil }
             = link_to books_path, class: 'nav-link' do
               %i.fa.fa-book
               Books
-          %li#items-nav.nav-item
+          %li#items-nav.nav-item{class: yield(:nav_section) == "tasks" ? "active" : nil }
             = link_to tasks_path, class: 'nav-link' do
               %i.fa.fa-tasks
               Tasks
