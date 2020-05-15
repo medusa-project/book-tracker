@@ -1,0 +1,20 @@
+!!!
+%html{lang: "en"}
+  %head
+    %meta{content: "text/html; charset=UTF-8", "http-equiv": "Content-Type"}/
+    %title
+      = yield(:title).present? ? "#{yield(:title)} | " : ''
+      Book Tracker
+    %meta{charset: "utf-8"}/
+    %meta{content: "width=device-width, initial-scale=1, shrink-to-fit=no", name: "viewport"}/
+    = csrf_meta_tags
+    = stylesheet_link_tag 'application', media: 'all'
+    = javascript_include_tag 'application'
+  %body{id: yield(:body_id).present? ? yield(:body_id) : nil,
+        "data-nav": yield(:active_nav).present? ? yield(:active_nav) : nil}
+    .container-fluid
+      = render partial: 'layouts/header'
+      .page-content
+        = flashes
+        = yield.force_encoding(Encoding::UTF_8)
+      = render partial: 'layouts/footer'
