@@ -96,7 +96,7 @@ class TasksController < ApplicationController
   # Responds to GET /tasks
   #
   def index
-    @tasks = Task.order(created_at: :desc).limit(100)
+    @tasks = Task.order(created_at: :desc).limit(50)
 
     @last_fs_import = Task.where(service: Service::LOCAL_STORAGE).
         where('completed_at IS NOT NULL').
