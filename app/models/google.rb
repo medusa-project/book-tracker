@@ -118,7 +118,7 @@ class Google
 
     # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
     config = Configuration.instance
-    ecs = Aws::ECS::Client.new(region: config.aws_region)
+    ecs = Aws::ECS::Client.new
     args = {
         cluster: config.ecs_cluster,
         task_definition: config.ecs_async_task_definition,

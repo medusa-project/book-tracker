@@ -3,7 +3,7 @@
 require 'configuration'
 
 config = ::Configuration.instance
-opts   = { region: config.aws_region.present? ? config.aws_region : ENV['AWS_REGION'] }
+opts   = {}
 
 if Rails.env.development? || Rails.env.test?
   # In development and test, we connect to a custom endpoint, and credentials
