@@ -16,18 +16,10 @@ class TasksController < ApplicationController
     if uploaded_io.respond_to?(:original_filename)
       # Store the uploaded file in an S3 bucket.
       config = ::Configuration.instance
-      opts = {
-          region: config.aws_region,
-          force_path_style: true,
-          credentials: Aws::Credentials.new(config.aws_access_key_id,
-                                            config.aws_secret_access_key)
-      }
-      opts[:endpoint] = config.s3_endpoint if config.s3_endpoint.present?
-
-      client = Aws::S3::Client.new(opts)
-      s3 = Aws::S3::Resource.new(client: client)
-      key = sprintf('google_inventory_%d.txt', Time.now.to_i)
-      obj = s3.bucket(config.temp_bucket).object(key)
+      client = Aws::S3::Client.new
+      s3     = Aws::S3::Resource.new(client: client)
+      key    = sprintf('google_inventory_%d.txt', Time.now.to_i)
+      obj    = s3.bucket(config.temp_bucket).object(key)
       obj.put(body: uploaded_io)
 
       task = Task.create!(name: 'Preparing to check Google',

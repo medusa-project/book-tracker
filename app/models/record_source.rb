@@ -50,15 +50,7 @@ class RecordSource
 
     begin
       config = Configuration.instance
-      opts = {
-          region: config.aws_region,
-          force_path_style: true,
-          credentials: Aws::Credentials.new(config.aws_access_key_id,
-                                            config.aws_secret_access_key)
-      }
-      opts[:endpoint] = config.s3_endpoint if config.s3_endpoint.present?
-
-      client = Aws::S3::Client.new(opts)
+      client = Aws::S3::Client.new
 
       num_invalid_files = file_index = record_index = 0
       batch = []
