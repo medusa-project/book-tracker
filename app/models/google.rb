@@ -118,7 +118,7 @@ class Google
 
     # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
     config = Configuration.instance
-    ecs = Aws::ECS::Client.new(region: config.aws_region)
+    ecs = Aws::ECS::Client.new
     args = {
         cluster: config.ecs_cluster,
         task_definition: config.ecs_async_task_definition,
@@ -145,17 +145,7 @@ class Google
   private
 
   def get_client
-    unless @client
-      config = Configuration.instance
-      opts = {
-          region: config.aws_region,
-          force_path_style: true,
-          credentials: Aws::Credentials.new(config.aws_access_key_id,
-                                            config.aws_secret_access_key)
-      }
-      opts[:endpoint] = config.s3_endpoint if config.s3_endpoint.present?
-      @client = Aws::S3::Client.new(opts)
-    end
+    @client = Aws::S3::Client.new unless @client
     @client
   end
 

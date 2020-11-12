@@ -3,8 +3,15 @@
 require 'configuration'
 
 config = ::Configuration.instance
+opts   = {}
 
-Aws.config.update(
-    credentials: Aws::Credentials.new(config.aws_access_key_id || ENV['AWS_ACCESS_KEY_ID'],
-                                      config.aws_secret_access_key || ENV['AWS_SECRET_ACCESS_KEY']),
-    region: config.aws_region || ENV['AWS_REGION'])
+if Rails.env.development? || Rails.env.test?
+  # In development and test, we connect to a custom endpoint, and credentials
+  # are drawn from the application configuration.
+  opts[:endpoint]         = config.aws_endpoint
+  opts[:force_path_style] = true
+  opts[:credentials]      = Aws::Credentials.new(config.aws_access_key_id,
+                                                 config.aws_secret_access_key)
+end
+
+Aws.config.update(opts)
