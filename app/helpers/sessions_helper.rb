@@ -30,6 +30,11 @@ module SessionsHelper
     !current_user.nil?
   end
 
+  def signin_path
+    (Rails.env.production? || Rails.env.demo?) ?
+      "/auth/shibboleth" : "/auth/developer"
+  end
+
   def redirect_back_or(default)
     redirect_to(session[:return_to] || default)
     session.delete(:return_to)

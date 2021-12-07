@@ -15,6 +15,7 @@ gem 'jquery-rails'
 gem 'local_time'
 gem 'mini_racer', platforms: :ruby
 gem 'omniauth'
+gem "omniauth-rails_csrf_protection"
 gem 'omniauth-shibboleth'
 gem 'pg'
 gem 'puma'
@@ -26,8 +27,4 @@ gem 'uglifier', '>= 1.3.0'
 
 group :development do
   gem 'listen'
-end
-
-group :production do
-  gem "omniauth-rails_csrf_protection"
 end
