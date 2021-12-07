@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.7.5'
+ruby '3.0.3'
 
 gem 'autoprefixer-rails'
 gem 'aws-sdk-ecs', '~> 1' # used to invoke async tasks
@@ -25,7 +25,7 @@ gem 'scars-bootstrap-theme', github: 'medusa-project/scars-bootstrap-theme',
 gem 'uglifier', '>= 1.3.0'
 
 group :development do
-  gem 'listen', '>= 3.0.5', '< 3.2'
+  gem 'listen'
 end
 
 group :production do

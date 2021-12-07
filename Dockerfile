@@ -1,5 +1,5 @@
 # N.B.: this must match the Ruby version in the Gemfile, and /.ruby-version.
-FROM ruby:2.7.5-slim
+FROM ruby:3.0.3-slim
 
 ENV RAILS_ENV=production
 ENV RAILS_LOG_TO_STDOUT=true
@@ -16,7 +16,9 @@ WORKDIR app
 # Copy the Gemfile as well as the Gemfile.lock and install gems.
 # This is a separate step so the dependencies will be cached.
 COPY Gemfile Gemfile.lock ./
-RUN gem install bundler && bundle install --without development test --jobs 20 --retry 5
+RUN gem install bundler \
+    && bundle config set --local without 'development test' \
+    && bundle install --jobs 20 --retry 5
 
 # Copy the main application, except whatever is listed in .dockerignore.
 COPY . ./
