@@ -1,5 +1,5 @@
 # N.B.: this must match the Ruby version in the Gemfile, and /.ruby-version.
-FROM ruby:2.6.2-slim
+FROM ruby:2.7.5-slim
 
 ENV RAILS_ENV=production
 ENV RAILS_LOG_TO_STDOUT=true
