@@ -79,6 +79,7 @@ class Book < ApplicationRecord
   def self.bulk_upsert(rows)
     # Duplicate object IDs will be refused due to the unique index on obj_id.
     rows.uniq!{ |r| r[:obj_id] }
+    return if rows.empty?
 
     sql = StringIO.new
 
