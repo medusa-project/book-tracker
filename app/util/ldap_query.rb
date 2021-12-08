@@ -2,8 +2,8 @@
 # This code forked from:
 # https://github.com/medusa-project/medusa-collection-registry/blob/0c8dcecc6866290f861de7d508feaada69b1233b/app/models/ldap_query.rb
 #
-# ... and modified to use Net::HTTP rather than adding a dependency on a third-
-# party HTTP client.
+# ... and modified to use Net::HTTP rather than adding a dependency on another
+# HTTP client.
 #
 class LdapQuery
 
@@ -28,7 +28,7 @@ class LdapQuery
         (response.body == 'TRUE').tap do |is_member|
           hash[group] = is_member
           Rails.cache.write(ldap_cache_key(net_id), hash.to_json,
-                            expires_in: 1.day, race_condition_ttl: 10.seconds)
+                            expires_in: 8.hours, race_condition_ttl: 10.seconds)
         end
       else
         # don't authenticate, but also don't cache, in this case
@@ -37,8 +37,9 @@ class LdapQuery
     end
   end
 
-  def ldap_url(group, net_id)
-    "https://quest.library.illinois.edu/directory/ad/#{net_id}/ismemberof/#{URI.encode(group)}"
+  def ldap_url(group, netid)
+    group.gsub!(" ", "%20")
+    "https://quest.library.illinois.edu/directory/ad/#{netid}/ismemberof/#{group}"
   end
 
   def self.ldap_cache_key(net_id)
