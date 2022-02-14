@@ -11,10 +11,14 @@ class ApplicationController < ActionController::Base
     flash['error'] = "#{e}"
   end
 
+  def redirect_via_post(url)
+    render partial: "shared/post_redirect", locals: { url: url }
+  end
+
   def signed_in_user
     unless signed_in?
       store_location
-      redirect_to signin_path, notice: 'Please log in.'
+      redirect_via_post(signin_path)
     end
   end
 

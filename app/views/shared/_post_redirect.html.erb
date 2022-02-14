@@ -1,0 +1,36 @@
+<%
+  # Partial for "redirecting" via POST. Use from a controller like this:
+  #
+  # render partial: "shared/post_redirect", locals: { url: "url-to-redirect-to" }
+  #
+  # Or more succinctly:
+  #
+  # redirect_via_post(url)
+  #
+  # The motivating use case is to redirect to /auth/:provider via POST, because
+  # GET is disabled to prevent CSRF.
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta charset="utf-8">
+    <title>Redirecting</title>
+
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+    <%= csrf_meta_tags %>
+    <%= stylesheet_link_tag 'application', media: 'all' %>
+    <%= javascript_include_tag 'application' %>
+    <%= javascript_tag do %>
+      $(document).ready(function() {
+          $("form#redirect input").click();
+      });
+    <% end %>
+  </head>
+  <body>
+    <%= form_tag(url, method: :post, id: "redirect") do %>
+      <%= submit_tag("Click here to continue", class: "btn btn-light m-3") %>
+    <% end %>
+  </body>
+</html>
