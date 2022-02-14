@@ -19,7 +19,7 @@ gem "omniauth-rails_csrf_protection"
 gem 'omniauth-shibboleth'
 gem 'pg'
 gem 'puma'
-gem 'rails', '~> 6.0.4.1'
+gem 'rails', '~> 6'
 gem 'sassc'
 gem 'scars-bootstrap-theme', github: 'medusa-project/scars-bootstrap-theme',
     branch: 'release/bootstrap-4.4'
