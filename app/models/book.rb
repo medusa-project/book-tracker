@@ -59,7 +59,7 @@ class Book < ApplicationRecord
     end
     sql << ');'
 
-    binds = batch.map{ |s| [nil, s] }
+    binds = batch
 
     Rails.logger.debug("Book.bulk_update(): updating #{batch.length} records")
     ActiveRecord::Base.connection.exec_query(sql.string, 'SQL', binds, prepare: true)
@@ -107,7 +107,7 @@ class Book < ApplicationRecord
         if value.blank?
           value = not_null_bool_cols.include?(col) ? false : nil
         end
-        binds << [nil, value]
+        binds << value
       end
     end
 
