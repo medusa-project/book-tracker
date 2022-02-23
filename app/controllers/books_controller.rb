@@ -150,16 +150,15 @@ class BooksController < ApplicationController
     @allowed_params.permit!
     @next_page_url = books_path(@allowed_params.merge(page: next_page))
 
-    # COUNT queries are inherently slow in Postgres (see
-    # https://wiki.postgresql.org/wiki/Slow_Counting). If there are no filters,
-    # we can use PG's estimated count instead.
-    #if any_filters
+    # We have had an issue with slow COUNT queries in AWS RDS. If there are no
+    # filters, we can use PG's estimated count instead.
+    if any_filters
       @count = @books.count
       @count_is_approximate = false
-    #else
-    #  @count = Book.approximate_count
-    #  @count_is_approximate = true
-    #end
+    else
+      @count = Book.approximate_count
+      @count_is_approximate = true
+    end
 
     offset = (page - 1) * WINDOW_SIZE
 
