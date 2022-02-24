@@ -1,6 +1,6 @@
 class BooksController < ApplicationController
 
-  WINDOW_SIZE = 50
+  WINDOW_SIZE = 100
 
   protect_from_forgery except: :index
 
