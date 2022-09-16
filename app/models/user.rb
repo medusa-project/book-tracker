@@ -4,7 +4,12 @@ class User
 
   def medusa_admin?
     group = Configuration.instance.medusa_admins_group
-    LdapQuery.new.is_member_of?(group, username)
+    user  = UiucLibAd::Entity.new(entity_cn: self.username)
+    begin
+      return user.is_member_of?(group_cn: group)
+    rescue UiucLibAd::NoDNFound
+      return false
+    end
   end
 
   def to_s
