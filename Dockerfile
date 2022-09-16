@@ -29,4 +29,5 @@ EXPOSE 3000
 
 # This is the web server entry point. It will need to be overridden when
 # running the workers.
+# TODO: invoke db:prepare here too. This will be problematic, though, if the DB migration would take longer than the ECS health check interval
 CMD ["bin/rails", "server", "-b", "0.0.0.0"]
