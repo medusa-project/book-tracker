@@ -154,13 +154,14 @@ class Book < ApplicationRecord
         xpath('marc:datafield[@tag = 035][1]/marc:subfield[@code = \'a\']', namespaces)
     book_params[:oclc_number] = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
 
-    # extract author & title from 100 & 245 subfields a & b
+    # extract author & title from 100 & 245 subfields a & b, stripping trailing
+    # periods.
     book_params[:author] = record.
         xpath('marc:datafield[@tag = 100][1]/marc:subfield', namespaces).
-        map(&:content).join(' ').strip
+        map(&:content).join(' ').strip.chomp(".")
     book_params[:title] = record.
         xpath('marc:datafield[@tag = 245][1]/marc:subfield[@code = \'a\' or @code = \'b\']', namespaces).
-        map(&:content).join(' ').strip
+        map(&:content).join(' ').strip.chomp(".")
 
     # extract language from 008
     nodes = record.xpath('marc:controlfield[@tag = 008][1]', namespaces)
@@ -171,7 +172,7 @@ class Book < ApplicationRecord
     # are combined into one value separated by SUBJECT_DELIMITER, to avoid
     # the unnecessary complexity of another table.
     nodes = record.xpath('marc:datafield[@tag = 650]/marc:subfield[@code = \'a\']', namespaces)
-    book_params[:subject] = nodes.map(&:content).join(SUBJECT_DELIMITER)
+    book_params[:subject] = nodes.map{ |n| n.content.chomp(".") }.join(SUBJECT_DELIMITER)
 
     # extract volume from 955 subfield v
     nodes = record.xpath('marc:datafield[@tag = 955][1]/marc:subfield[@code = \'v\']', namespaces)
