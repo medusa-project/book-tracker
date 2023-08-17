@@ -47,3 +47,19 @@ three:
   exists_in_google: false
   source_path: MyString
   hathitrust_rights: MyString
+
+four:
+  bib_id: 4
+  oclc_number: MyString
+  obj_id: 004
+  title: MyString
+  author: MyString
+  volume: MyString
+  date: MyString
+  exists_in_hathitrust: true
+  ia_identifier: MyString
+  exists_in_internet_archive: true
+  raw_marcxml: MyText
+  exists_in_google: false
+  source_path: MyString
+  hathitrust_rights: MyString
