@@ -83,4 +83,10 @@ class BookTest < ActiveSupport::TestCase
     assert_not_nil Book.find_by_obj_id(123)
     assert_not_nil Book.find_by_obj_id(234)
   end
+
+  test 'internet_archive_url returns correct url based on IA identifier' do
+    b1 = books(:one)
+    assert_equal "https://archive.org/details/#{b1.ia_identifier}", b1.internet_archive_url
+
+  end
 end
