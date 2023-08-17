@@ -85,8 +85,19 @@ class BookTest < ActiveSupport::TestCase
   end
 
   test 'internet_archive_url returns correct url based on IA identifier' do
-    b1 = books(:one)
+    b1 = books(:one) #fixture data
     assert_equal "https://archive.org/details/#{b1.ia_identifier}", b1.internet_archive_url
 
+  end
+
+  test 'hathitrust_handle works only if book exists in hathitrust' do 
+    b1 = books(:one)
+    b4 = books(:four)
+
+    assert !b1.exists_in_hathitrust
+    assert_equal "", b1.hathitrust_handle
+
+    assert b4.exists_in_hathitrust
+    assert_equal "https://hdl.handle.net/2027/uiuc.#{b4.obj_id}", b4.hathitrust_handle
   end
 end
