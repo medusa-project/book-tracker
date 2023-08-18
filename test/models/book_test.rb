@@ -101,7 +101,15 @@ class BookTest < ActiveSupport::TestCase
     assert_equal "https://hdl.handle.net/2027/uiuc.#{b4.obj_id}", b4.hathitrust_handle
   end
 
+  test 'params_from_marcxml_record works' do 
+    skip()
+  end
+  
   test 'service returns which type of record the book is from' do 
+    skip()
+  end
+
+  test 'to_csv returns correct csv format of book data' do 
     skip()
   end
 
