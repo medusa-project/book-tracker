@@ -100,4 +100,19 @@ class BookTest < ActiveSupport::TestCase
     assert b4.exists_in_hathitrust
     assert_equal "https://hdl.handle.net/2027/uiuc.#{b4.obj_id}", b4.hathitrust_handle
   end
+
+  test 'service returns which type of record the book is from' do 
+    skip()
+  end
+
+  test 'uiuc_catalog_url returns the bib_id with prefix 99 and suffix 12205899' do 
+    b1 = books(:one)
+    bibid = b1.bib_id.to_s
+    base_url = 'https://i-share-uiu.primo.exlibrisgroup.com/permalink/01CARLI_UIU/gpjosq/alma'
+    prefix   = '99'
+    suffix   = '12205899'
+
+    assert bibid.present?
+    assert_equal "#{base_url}" + '99' + "#{bibid}" + '12205899', b1.uiuc_catalog_url
+  end
 end
