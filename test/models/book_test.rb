@@ -104,7 +104,22 @@ class BookTest < ActiveSupport::TestCase
   test 'params_from_marcxml_record works' do 
     skip()
   end
-  
+
+  test 'as_json returns book data as json data' do 
+    data = 
+      
+        {id: 1, bib_id: 1, oclc_number: "123", 
+        obj_id: "1", title: "Title", volume: "Volume", 
+        author: "author", language: nil, subjects: nil, 
+        date: "Date", url: nil, catalog_url: "a url", hathitrust_url: nil, 
+        hathitrust_rights: "String", hathitrust_rights: nil, internet_archive_identifier: "abc",
+        internet_archive_url: nil, created_at: nil,
+        updated_at: nil}
+      
+
+    assert_not_nil data
+  end
+
   test 'service returns which type of record the book is from' do 
     skip()
   end
