@@ -106,18 +106,21 @@ class BookTest < ActiveSupport::TestCase
   end
 
   test 'as_json returns book data as json data' do 
+    b2 = books(:two)
+
     data = 
       
-        {id: 1, bib_id: 1, oclc_number: "123", 
-        obj_id: "1", title: "Title", volume: "Volume", 
-        author: "author", language: nil, subjects: nil, 
-        date: "Date", url: nil, catalog_url: "a url", hathitrust_url: nil, 
-        hathitrust_rights: "String", hathitrust_rights: nil, internet_archive_identifier: "abc",
-        internet_archive_url: nil, created_at: nil,
-        updated_at: nil}
+        {id: b2.id, bib_id: 2, oclc_number: "MyString", 
+        obj_id: "2", title: "MyString", volume: "MyString", 
+        author: "MyString", language: nil, subjects: nil, 
+        date: "MyString", url: nil, catalog_url: b2.uiuc_catalog_url, hathitrust_url: nil, 
+        hathitrust_rights: "MyString", hathitrust_access: nil, internet_archive_identifier: "MyString",
+        internet_archive_url: nil, created_at: b2.created_at,
+        updated_at: b2.updated_at}
       
 
     assert_not_nil data
+    assert_equal data, b2.as_json
   end
 
   test 'service returns which type of record the book is from' do 
@@ -126,7 +129,16 @@ class BookTest < ActiveSupport::TestCase
 
   test 'to_csv returns correct csv format of book data' do 
     skip()
+    b2 = books(:two)
+    expected = "#{Book::CSV_HEADER.join(',')}\n" + "#{b2.id},#{b2.oclc_number},#{b2.title},
+      #{b2.author},#{b2.volume},#{b2.date},false,#{b2.ia_identifier},false,#{b2.raw_marcxml}, 
+      false,#{b2.source_path},#{b2.hathitrust_rights}\n"
+
+      # require 'pry'; binding.pry 
+    actual = b2.to_csv 
+    assert_equal expected, actual 
   end
+
 
   test 'uiuc_catalog_url returns the bib_id with prefix 99 and suffix 12205899' do 
     b1 = books(:one)
