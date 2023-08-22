@@ -101,14 +101,18 @@ class BookTest < ActiveSupport::TestCase
     assert_equal "https://hdl.handle.net/2027/uiuc.#{b4.obj_id}", b4.hathitrust_handle
   end
 
-  test 'params_from_marcxml_record works' do 
+  test 'params_from_marcxml_record extracts individual data and returns hash' do 
     b5 = books(:five)
     doc = Nokogiri::XML(b5.raw_marcxml)
-    namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
+    # namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
     nodes = doc.css('controlfield[@tag = 001]')
     bib = nodes.first.content 
+    # key = b5.source_path
+    # record = doc.css('record').to_xml(indent: 4)
+    objid = doc.css('datafield[@tag = 955]').css('subfield[@code = \'b\']').first.content
     # require 'pry'; binding.pry 
     assert_equal b5.bib_id.to_s, bib 
+    assert_equal 14, objid.split(//).length #since it's a google record should be a barcode (14 characters)
   end
 
   test 'as_json returns book data as json data' do 
