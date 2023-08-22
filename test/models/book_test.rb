@@ -102,7 +102,13 @@ class BookTest < ActiveSupport::TestCase
   end
 
   test 'params_from_marcxml_record works' do 
-    skip()
+    b5 = books(:five)
+    doc = Nokogiri::XML(b5.raw_marcxml)
+    namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
+    nodes = doc.css('controlfield[@tag = 001]')
+    bib = nodes.first.content 
+    # require 'pry'; binding.pry 
+    assert_equal b5.bib_id.to_s, bib 
   end
 
   test 'as_json returns book data as json data' do 
@@ -124,7 +130,7 @@ class BookTest < ActiveSupport::TestCase
   end
 
   test 'service returns which type of record the book is from' do 
-    skip()
+    
   end
 
   test 'to_csv returns correct csv format of book data' do 
