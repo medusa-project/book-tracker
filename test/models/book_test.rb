@@ -105,9 +105,12 @@ class BookTest < ActiveSupport::TestCase
     b5 = books(:five)
     doc = Nokogiri::XML(b5.raw_marcxml)
     # namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
-    nodes = doc.css('controlfield[@tag = 001]')
-    bib = nodes.first.content 
     # key = b5.source_path
+    nodes = doc.css('controlfield[@tag = 001]')
+    # book_params = { source_path: key }
+    # book_params[:raw_marcxml] = b5.raw_marcxml 
+    # record = book_params[:raw_marcxml]
+    bib = nodes.first.content 
     # record = doc.css('record').to_xml(indent: 4)
     objid = doc.css('datafield[@tag = 955]').css('subfield[@code = \'b\']').first.content
     # require 'pry'; binding.pry 
@@ -129,12 +132,13 @@ class BookTest < ActiveSupport::TestCase
         updated_at: b2.updated_at}
       
 
-    assert_not_nil data
     assert_equal data, b2.as_json
   end
 
   test 'service returns which type of record the book is from' do 
-    
+    b5 = books(:five)
+
+    assert_equal Service::GOOGLE, b5.service 
   end
 
   test 'to_csv returns correct csv format of book data' do 
