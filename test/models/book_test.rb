@@ -157,6 +157,6 @@ class BookTest < ActiveSupport::TestCase
     suffix   = '12205899'
 
     assert bibid.present?
-    assert_equal "#{base_url}" + "#{prefix}" + "#{bibid}" + "#{suffix}", b1.uiuc_catalog_url
+    assert_equal [base_url, prefix, bibid, suffix].join, b1.uiuc_catalog_url
   end
 end
