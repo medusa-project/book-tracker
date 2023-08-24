@@ -83,3 +83,23 @@ five:
   hathitrust_access: nil
   source_path: "Google/20101208-1520.xml"
   raw_marcxml: <%= File.read('test/fixtures/files/sample.xml') %>
+
+six: 
+  id: 868521
+  bib_id: 4737365
+  oclc_number: "55069825"
+  obj_id: "ark:/13960/t4pk0b42v"
+  title: "Crito een dialoog van Plato /"
+  author: "Plato"
+  volume: nil
+  date: "1846."
+  language: "dut"
+  subject: nil
+  exists_in_hathitrust: false
+  exists_in_internet_archive: true
+  exists_in_google: false
+  ia_identifier: "4737365"
+  hathitrust_rights: nil
+  hathitrust_access: nil
+  source_path: "IA/NewMarcFilesUntil201406/4737365_marc.xml"
+  raw_marcxml: "Text"
