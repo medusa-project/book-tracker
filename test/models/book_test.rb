@@ -137,8 +137,11 @@ class BookTest < ActiveSupport::TestCase
 
   test 'service returns which type of record the book is from' do 
     b5 = books(:five)
+    b6 = books(:six)
 
-    assert_equal Service::GOOGLE, b5.service 
+    assert_equal Service::GOOGLE, b5.service
+    assert_equal Service::INTERNET_ARCHIVE, b6.service
+    #make assertion for internet archive
   end
 
   test 'to_csv returns correct csv format of book data' do 
