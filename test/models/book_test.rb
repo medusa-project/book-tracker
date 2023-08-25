@@ -102,16 +102,13 @@ class BookTest < ActiveSupport::TestCase
   end
 
   test 'params_from_marcxml_record extracts individual data and returns hash' do
-    
     b5 = books(:five)
-    record = Nokogiri::XML(b5.raw_marcxml).root 
-    namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
     key = b5.source_path
-    
-    assert_equal key, "Google/20101208-1520.xml" 
-    assert_equal 272087, b5.bib_id 
-    assert_not_nil b5.params_from_marcxml_record(key, record)
-    # require 'pry'; binding.pry 
+    xml_file = File.read('test/fixtures/files/sample.xml')
+    record = Nokogiri::XML(xml_file).root 
+
+    assert_not_nil Book.params_from_marcxml_record(key, record)
+    assert_equal Hash, Book.params_from_marcxml_record(key, record).class 
   end
 
   test 'as_json returns book data as json data' do 
