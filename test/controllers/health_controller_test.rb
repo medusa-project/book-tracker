@@ -1,9 +1,6 @@
-require "test_helper"
+grequire "test_helper"
 
 class HealthControllerTest < ActionDispatch::IntegrationTest
-  # setup do
-  #   @health = healths(:one)
-  # end
 
   test "should get health check" do
     get health_url
