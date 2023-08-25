@@ -12,39 +12,10 @@ class HealthControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'OK', response.body 
   end
 
-  # test "should get new" do
-  #   get new_health_url
-  #   assert_response :success
-  # end
+  test "should return a server error message if there is a 500 error" do 
+    get error_url 
 
-  # test "should create health" do
-  #   assert_difference("Health.count") do
-  #     post healths_url, params: { health: {  } }
-  #   end
-
-  #   assert_redirected_to health_url(Health.last)
-  # end
-
-  # test "should show health" do
-  #   get health_url(@health)
-  #   assert_response :success
-  # end
-
-  # test "should get edit" do
-  #   get edit_health_url(@health)
-  #   assert_response :success
-  # end
-
-  # test "should update health" do
-  #   patch health_url(@health), params: { health: {  } }
-  #   assert_redirected_to health_url(@health)
-  # end
-
-  # test "should destroy health" do
-  #   assert_difference("Health.count", -1) do
-  #     delete health_url(@health)
-  #   end
-
-  #   assert_redirected_to healths_url
-  # end
+    assert_response :internal_server_error
+    assert_equal '500 Internal Server Error', response.body 
+  end
 end
