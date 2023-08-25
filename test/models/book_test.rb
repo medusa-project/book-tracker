@@ -152,10 +152,8 @@ class BookTest < ActiveSupport::TestCase
     expected_csv = CSV.generate do |csv|
       csv << ["#{b2.bib_id}", "#{b2.id}", "#{b2.oclc_number}", "#{b2.obj_id}", "#{b2.title}", "#{b2.author}", "#{b2.volume}", "#{b2.date}", "#{b2.ia_identifier}", "#{b2.hathitrust_handle}", "#{b2.exists_in_hathitrust}", "#{b2.exists_in_internet_archive}", "#{b2.exists_in_google}"]
     end
-    expected_csv = expected_csv.delete("\n ")
-    expected_csv = expected_csv.delete('\"\"')
   
-    assert_equal expected_csv, expected
+    assert_equal expected_csv, b2.to_csv
   end
 
 
