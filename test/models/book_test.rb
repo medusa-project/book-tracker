@@ -140,12 +140,11 @@ class BookTest < ActiveSupport::TestCase
     
     b2 = books(:two)
     # expected = "#{b2.bib_id},#{b2.id},#{b2.oclc_number},#{b2.obj_id},#{b2.title},#{b2.author},#{b2.volume},#{b2.date},#{b2.ia_identifier},#{b2.hathitrust_handle},#{b2.exists_in_hathitrust},#{b2.exists_in_internet_archive},#{b2.exists_in_google}"
-
-    expected_csv = CSV.generate do |csv|
+    expected_csv = CSV.generate() do |csv|
       csv << ["#{b2.bib_id}", "#{b2.id}", "#{b2.oclc_number}", "#{b2.obj_id}", "#{b2.title}", "#{b2.author}", "#{b2.volume}", "#{b2.date}", "#{b2.ia_identifier}", "#{b2.hathitrust_handle}", "#{b2.exists_in_hathitrust}", "#{b2.exists_in_internet_archive}", "#{b2.exists_in_google}"]
     end
   
-    assert_equal expected_csv, b2.to_csv
+    assert_equal expected_csv, b2.to_csv({})
   end
 
 

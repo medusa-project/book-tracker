@@ -262,7 +262,7 @@ class Book < ApplicationRecord
     end
   end
   
-  def to_csv
+  def to_csv(options = {})
     CSV.generate do |csv|
       # N.B.: columns must be kept in sync with CSV_HEADER
       csv << [ self.bib_id, self.id, self.oclc_number, self.obj_id,
