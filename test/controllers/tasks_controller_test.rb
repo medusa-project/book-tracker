@@ -1,27 +1,48 @@
 require "test_helper"
 
 class TasksControllerTest < ActionDispatch::IntegrationTest
-  # setup do
-  #   @task = tasks(:one)
-  # end
+  setup do
+    @task = tasks(:one)
+  end
 
-  # test "should get index" do
-  #   get tasks_url
-  #   assert_response :success
-  # end
+  test "should get tasks" do
+    get tasks_path
+    
+    assert_response :success
+  end
 
-  # test "should get new" do
-  #   get new_task_url
-  #   assert_response :success
-  # end
+  test "should prepare to import marcxml records" do
+    post import_path(@task)
 
-  # test "should create task" do
-  #   assert_difference("Task.count") do
-  #     post tasks_url, params: { task: {  } }
-  #   end
+    assert_response :success
+    assert_equal 200, response.status
+  end
 
-  #   assert_redirected_to task_url(Task.last)
+  test "should conduct a Hathitrust check" do
+    
+    post check_hathitrust_path
+
+    assert_equal 200, response.status
+  end
+
+  # test "should redirect back after conducting Hathitrust check" do 
+
+  #   post '/check-hathitrust'
+
+  #   assert_redirected_to
+
   # end
+    
+    # assert_redirected_to tasks_path 
+    # follow_redirect!
+
+    # assert_response :redirect 
+
+    # get page_url, headers: { 'HTTP_REFERER': previous_page_url }
+
+
+
+    # assert_difference("Task.count")
 
   # test "should show task" do
   #   get task_url(@task)
