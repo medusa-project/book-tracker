@@ -10,14 +10,14 @@ class ActiveSupport::TestCase
   ##
 # @param user [User]
 #
-  def log_in_as(user)
+  def log_in
     post "/auth/shibboleth/callback", env: {
       "omniauth.auth": {
         provider:          "shibboleth",
         "Shib-Session-ID": SecureRandom.hex,
-        uid:               user.email,
+        uid:               'admin@email.com',
         info: {
-          email: user.email
+          email: 'admin@email.com'
         },
         extra: {
           raw_info: {
@@ -25,5 +25,9 @@ class ActiveSupport::TestCase
         }
       }
     }
+  end
+
+  def log_out 
+    delete sign_out_path 
   end
 end
