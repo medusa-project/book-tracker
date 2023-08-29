@@ -26,31 +26,21 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
   end
 
   # test "should redirect back after conducting Hathitrust check" do 
-
+    
   #   post '/check-hathitrust'
 
-  #   assert_redirected_to
-
+  #   assert_redirected_to "/"
   # end
-    
-    # assert_redirected_to tasks_path 
-    # follow_redirect!
 
-    # assert_response :redirect 
-
-    # get page_url, headers: { 'HTTP_REFERER': previous_page_url }
-
-
-
-    # assert_difference("Task.count")
+  # assert_redirected_to tasks_path 
+  # follow_redirect!
+  # assert_response :redirect 
+  
+  # get page_url, headers: { 'HTTP_REFERER': previous_page_url }
+  # end
 
   # test "should show task" do
   #   get task_url(@task)
-  #   assert_response :success
-  # end
-
-  # test "should get edit" do
-  #   get edit_task_url(@task)
   #   assert_response :success
   # end
 
