@@ -54,5 +54,10 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 200, response.status 
   end
 
+  test "should redirect back to '/check-internet-archive' after conducting IA check" do 
 
+    post check_internet_archive_url
+
+    assert_equal "/check-internet-archive", request.path 
+  end
 end
