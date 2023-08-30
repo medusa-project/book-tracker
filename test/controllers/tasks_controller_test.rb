@@ -31,7 +31,7 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal "/check-google", request.path 
   end
-  
+
   test "should conduct a Hathitrust check" do
     
     post check_hathitrust_url
@@ -45,6 +45,13 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     
     assert_equal "/check-hathitrust", request.path 
     
+  end
+
+  test "should conduct a Internet Archive check" do 
+
+    post check_internet_archive_url 
+
+    assert_equal 200, response.status 
   end
 
 
