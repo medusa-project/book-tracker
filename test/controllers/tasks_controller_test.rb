@@ -18,6 +18,20 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 200, response.status
   end
 
+  test "should conduct a Google check" do 
+
+    post check_google_url 
+
+    assert_equal 200, response.status
+  end
+
+  test "should redirect back to '/check-google' after conducting Google check" do 
+
+    post check_google_url 
+
+    assert_equal "/check-google", request.path 
+  end
+  
   test "should conduct a Hathitrust check" do
     
     post check_hathitrust_url
@@ -32,5 +46,6 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     assert_equal "/check-hathitrust", request.path 
     
   end
+
 
 end
