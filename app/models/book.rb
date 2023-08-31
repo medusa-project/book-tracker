@@ -97,37 +97,37 @@ class Book < ApplicationRecord
     not_null_bool_cols = %w(exists_in_google
       exists_in_hathitrust exists_in_internet_archive)
       
-      binds = []
-      rows.each do |row|
-        row[:created_at] = 'NOW()'
-        row[:updated_at] = 'NOW()'
-        COLUMNS.each do |col|
-          value = row[col.to_sym]
-          if value.blank?
-            value = not_null_bool_cols.include?(col) ? false : nil
-          end
-          binds << value
+    binds = []
+    rows.each do |row|
+      row[:created_at] = 'NOW()'
+      row[:updated_at] = 'NOW()'
+      COLUMNS.each do |col|
+        value = row[col.to_sym]
+        if value.blank?
+          value = not_null_bool_cols.include?(col) ? false : nil
         end
+        binds << value
       end
+    end
       
-      sql << "\nON CONFLICT (obj_id) DO\n"
-      sql << "UPDATE SET\n\t"
-      cols = COLUMNS.reject{ |c| %w(created_at exists_in_hathitrust
-        exists_in_internet_archive exists_in_google hathitrust_access).include?(c) }
-        cols.each_with_index do |col, index|
-          sql << col
-          sql << ' = EXCLUDED.'
-          sql << col
-          sql << ', ' if index < cols.length - 1
-        end
-        sql << ';'
-        begin
-          ActiveRecord::Base.connection.exec_query(sql.string, 'SQL', binds, prepare: true)
-        rescue => e
-          Rails.logger.error("Book.bulk_upsert(): #{e}\nSQL: #{sql.string}")
-          raise e
-        end
-      end
+    sql << "\nON CONFLICT (obj_id) DO\n"
+    sql << "UPDATE SET\n\t"
+    cols = COLUMNS.reject{ |c| %w(created_at exists_in_hathitrust
+    exists_in_internet_archive exists_in_google hathitrust_access).include?(c) }
+    cols.each_with_index do |col, index|
+      sql << col
+      sql << ' = EXCLUDED.'
+      sql << col
+      sql << ', ' if index < cols.length - 1
+    end
+    sql << ';'
+    begin
+      ActiveRecord::Base.connection.exec_query(sql.string, 'SQL', binds, prepare: true)
+    rescue => e
+      Rails.logger.error("Book.bulk_upsert(): #{e}\nSQL: #{sql.string}")
+      raise e
+    end
+  end
       
       ##
       # @param record Nokogiri element corresponding to a /collection/record
@@ -135,92 +135,92 @@ class Book < ApplicationRecord
       # @param key [String] Object key of the MARCXML file.
       # @return [Hash] Params hash for a Book.
       #
-      def self.params_from_marcxml_record(key, record)
-        namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
-        book_params = {
-          source_path: key
-        }
-        
-        # raw MARCXML
-        book_params[:raw_marcxml] = record.to_xml(indent: 4)
-        # extract bib ID
-        nodes = record.xpath('marc:controlfield[@tag = 001]', namespaces)
-        book_params[:bib_id] = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
-        # extract OCLC no. from 035 subfield a
-        nodes = record.
-        xpath('marc:datafield[@tag = 035][1]/marc:subfield[@code = \'a\']', namespaces)
-        book_params[:oclc_number] = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
-        
-        # extract author & title from 100 & 245 subfields a & b, stripping trailing
-        # periods.
-        book_params[:author] = record.
-        xpath('marc:datafield[@tag = 100][1]/marc:subfield', namespaces).
-        map(&:content).join(' ').strip.chomp(".")
-        book_params[:title] = record.
-        xpath('marc:datafield[@tag = 245][1]/marc:subfield[@code = \'a\' or @code = \'b\']', namespaces).
-        map(&:content).join(' ').strip.chomp(".")
-        
-        # extract language from 008
-        nodes = record.xpath('marc:controlfield[@tag = 008][1]', namespaces)
-        book_params[:language] = nodes.first.content[35..37] if nodes.any?
-        
-        # extract subject from 650 subfield a
-        # N.B.: books may have more than one subject; in this case the subjects
-        # are combined into one value separated by SUBJECT_DELIMITER, to avoid
-        # the unnecessary complexity of another table.
-        nodes = record.xpath('marc:datafield[@tag = 650]/marc:subfield[@code = \'a\']', namespaces)
-        book_params[:subject] = nodes.map{ |n| n.content.chomp(".") }.join(SUBJECT_DELIMITER)
-        
-        # extract volume from 955 subfield v
-        nodes = record.xpath('marc:datafield[@tag = 955][1]/marc:subfield[@code = \'v\']', namespaces)
-        book_params[:volume] = nodes.first.content.strip if nodes.any?
-        
-        # extract date from 260 subfield c
-        nodes = record.
-        xpath('marc:datafield[@tag = 260][1]/marc:subfield[@code = \'c\']', namespaces)
-        book_params[:date] = nodes.first.content.strip if nodes.any?
-        
-        # extract object ID from 955 subfield b
-        # For Google digitized volumes, this will be the barcode.
-        # For Internet Archive digitized volumes, this will be the Ark ID.
-        # For locally digitized volumes, this will be the bib ID (and other extensions)
-        nodes = record.
-        xpath('marc:datafield[@tag = 955]/marc:subfield[@code = \'b\']', namespaces)
-        # strip leading "uiuc."
-        book_params[:obj_id] = nodes.first.content.gsub(/^uiuc./, '').strip if nodes.any?
-        
-        # extract IA identifier from 955 subfield q
-        nodes = record.
-        xpath('marc:datafield[@tag = 955]/marc:subfield[@code = \'q\']', namespaces)
-        book_params[:ia_identifier] = nodes.first.content.strip if nodes.any?
-        
-        book_params
-      end
+  def self.params_from_marcxml_record(key, record)
+    namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
+    book_params = {
+      source_path: key
+    }
+    
+    # raw MARCXML
+    book_params[:raw_marcxml] = record.to_xml(indent: 4)
+    # extract bib ID
+    nodes = record.xpath('marc:controlfield[@tag = 001]', namespaces)
+    book_params[:bib_id] = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
+    # extract OCLC no. from 035 subfield a
+    nodes = record.
+    xpath('marc:datafield[@tag = 035][1]/marc:subfield[@code = \'a\']', namespaces)
+    book_params[:oclc_number] = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
+    
+    # extract author & title from 100 & 245 subfields a & b, stripping trailing
+    # periods.
+    book_params[:author] = record.
+    xpath('marc:datafield[@tag = 100][1]/marc:subfield', namespaces).
+    map(&:content).join(' ').strip.chomp(".")
+    book_params[:title] = record.
+    xpath('marc:datafield[@tag = 245][1]/marc:subfield[@code = \'a\' or @code = \'b\']', namespaces).
+    map(&:content).join(' ').strip.chomp(".")
+    
+    # extract language from 008
+    nodes = record.xpath('marc:controlfield[@tag = 008][1]', namespaces)
+    book_params[:language] = nodes.first.content[35..37] if nodes.any?
+    
+    # extract subject from 650 subfield a
+    # N.B.: books may have more than one subject; in this case the subjects
+    # are combined into one value separated by SUBJECT_DELIMITER, to avoid
+    # the unnecessary complexity of another table.
+    nodes = record.xpath('marc:datafield[@tag = 650]/marc:subfield[@code = \'a\']', namespaces)
+    book_params[:subject] = nodes.map{ |n| n.content.chomp(".") }.join(SUBJECT_DELIMITER)
+    
+    # extract volume from 955 subfield v
+    nodes = record.xpath('marc:datafield[@tag = 955][1]/marc:subfield[@code = \'v\']', namespaces)
+    book_params[:volume] = nodes.first.content.strip if nodes.any?
+    
+    # extract date from 260 subfield c
+    nodes = record.
+    xpath('marc:datafield[@tag = 260][1]/marc:subfield[@code = \'c\']', namespaces)
+    book_params[:date] = nodes.first.content.strip if nodes.any?
+    
+    # extract object ID from 955 subfield b
+    # For Google digitized volumes, this will be the barcode.
+    # For Internet Archive digitized volumes, this will be the Ark ID.
+    # For locally digitized volumes, this will be the bib ID (and other extensions)
+    nodes = record.
+    xpath('marc:datafield[@tag = 955]/marc:subfield[@code = \'b\']', namespaces)
+    # strip leading "uiuc."
+    book_params[:obj_id] = nodes.first.content.gsub(/^uiuc./, '').strip if nodes.any?
+    
+    # extract IA identifier from 955 subfield q
+    nodes = record.
+    xpath('marc:datafield[@tag = 955]/marc:subfield[@code = \'q\']', namespaces)
+    book_params[:ia_identifier] = nodes.first.content.strip if nodes.any?
+    
+    book_params
+  end
       
-      def as_json(options = { })
-        {
-          id: self.id,
-          bib_id: self.bib_id,
-          oclc_number: self.oclc_number,
-          obj_id: self.obj_id,
-          title: self.title,
-          volume: self.volume,
-          author: self.author,
-          language: self.language,
-          subjects: self.subject&.split(SUBJECT_DELIMITER),
-          date: self.date,
-          url: self.url,
-          catalog_url: self.uiuc_catalog_url,
-          hathitrust_url: self.exists_in_hathitrust ?
-          self.hathitrust_handle : nil,
-          hathitrust_rights: self.hathitrust_rights,
-          hathitrust_access: self.hathitrust_access,
-          internet_archive_identifier: self.ia_identifier,
-          internet_archive_url: self.exists_in_internet_archive ?
-          self.internet_archive_url : nil,
-          created_at: self.created_at,
-          updated_at: self.updated_at
-        }
+  def as_json(options = { })
+    {
+      id: self.id,
+      bib_id: self.bib_id,
+      oclc_number: self.oclc_number,
+      obj_id: self.obj_id,
+      title: self.title,
+      volume: self.volume,
+      author: self.author,
+      language: self.language,
+      subjects: self.subject&.split(SUBJECT_DELIMITER),
+      date: self.date,
+      url: self.url,
+      catalog_url: self.uiuc_catalog_url,
+      hathitrust_url: self.exists_in_hathitrust ?
+      self.hathitrust_handle : nil,
+      hathitrust_rights: self.hathitrust_rights,
+      hathitrust_access: self.hathitrust_access,
+      internet_archive_identifier: self.ia_identifier,
+      internet_archive_url: self.exists_in_internet_archive ?
+      self.internet_archive_url : nil,
+      created_at: self.created_at,
+      updated_at: self.updated_at
+    }
   end
 
   ##
