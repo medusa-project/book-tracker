@@ -33,6 +33,7 @@ gem "rails-html-sanitizer", ">= 1.4.4"
 gem "actionpack", ">= 7.0.5.1"
 gem "actionview", ">= 7.0.4.3"
 gem 'nokogiri', ">= 1.14.3"
+gem 'globalid', ">= 1.0.1"
 
 group :development do
   gem 'listen'
