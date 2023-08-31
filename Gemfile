@@ -11,6 +11,7 @@ gem "font-awesome-sass", "~> 5.6" # Provides all of our icons
 gem 'haml'
 gem 'haml-rails'
 gem 'jbuilder', '~> 2.5'
+gem "jmespath", ">= 1.6.1"
 gem 'jquery-rails'
 gem 'local_time'
 gem 'mini_racer', platforms: :ruby
@@ -26,6 +27,13 @@ gem 'scars-bootstrap-theme', github: 'medusa-project/scars-bootstrap-theme',
 gem 'sprockets-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'uiuc_lib_ad', git: 'https://github.com/UIUCLibrary/uiuc_lib_ad.git'
+gem "rack", ">= 2.2.6.4"
+gem "activerecord", ">= 7.0.4.1"
+gem "rails-html-sanitizer", ">= 1.4.4"
+gem "actionpack", ">= 7.0.5.1"
+gem "actionview", ">= 7.0.4.3"
+gem 'nokogiri', ">= 1.14.3"
+gem 'globalid', ">= 1.0.1"
 
 group :development do
   gem 'listen'

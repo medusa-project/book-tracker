@@ -297,25 +297,33 @@ PLATFORMS
   x86_64-darwin-22
 
 DEPENDENCIES
+  actionpack (>= 7.0.5.1)
+  actionview (>= 7.0.4.3)
+  activerecord (>= 7.0.4.1)
   autoprefixer-rails
   aws-sdk-ecs (~> 1)
   aws-sdk-s3 (~> 1)
   csv_builder
   font-awesome-sass (~> 5.6)
+  globalid (>= 1.0.1)
   haml
   haml-rails
   jbuilder (~> 2.5)
+  jmespath (>= 1.6.1)
   jquery-rails
   listen
   local_time
   mini_racer
+  nokogiri (>= 1.14.3)
   omniauth
   omniauth-rails_csrf_protection
   omniauth-shibboleth
   pg
   pry
   puma (>= 5.6.7)
+  rack (>= 2.2.6.4)
   rails (~> 7)
+  rails-html-sanitizer (>= 1.4.4)
   sassc
   scars-bootstrap-theme!
   sprockets-rails
