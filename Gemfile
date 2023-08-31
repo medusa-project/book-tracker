@@ -18,7 +18,7 @@ gem 'omniauth'
 gem "omniauth-rails_csrf_protection"
 gem 'omniauth-shibboleth'
 gem 'pg'
-gem 'puma'
+gem 'puma', ">= 5.6.7"
 gem 'rails', '~> 7'
 gem 'sassc'
 gem 'scars-bootstrap-theme', github: 'medusa-project/scars-bootstrap-theme',
@@ -29,4 +29,5 @@ gem 'uiuc_lib_ad', git: 'https://github.com/UIUCLibrary/uiuc_lib_ad.git'
 
 group :development do
   gem 'listen'
+  gem 'pry'
 end
