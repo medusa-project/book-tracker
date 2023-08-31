@@ -313,6 +313,7 @@ DEPENDENCIES
   listen
   local_time
   mini_racer
+  nokogiri (>= 1.14.3)
   omniauth
   omniauth-rails_csrf_protection
   omniauth-shibboleth
