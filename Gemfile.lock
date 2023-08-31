@@ -298,6 +298,7 @@ PLATFORMS
 
 DEPENDENCIES
   actionpack (>= 7.0.5.1)
+  actionview (>= 7.0.4.3)
   activerecord (>= 7.0.4.1)
   autoprefixer-rails
   aws-sdk-ecs (~> 1)
