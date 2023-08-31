@@ -11,6 +11,7 @@ gem "font-awesome-sass", "~> 5.6" # Provides all of our icons
 gem 'haml'
 gem 'haml-rails'
 gem 'jbuilder', '~> 2.5'
+gem "jmespath", ">= 1.6.1"
 gem 'jquery-rails'
 gem 'local_time'
 gem 'mini_racer', platforms: :ruby
