@@ -28,6 +28,7 @@ gem 'sprockets-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'uiuc_lib_ad', git: 'https://github.com/UIUCLibrary/uiuc_lib_ad.git'
 gem "rack", ">= 2.2.6.4"
+gem "activerecord", ">= 7.0.4.1"
 
 group :development do
   gem 'listen'
