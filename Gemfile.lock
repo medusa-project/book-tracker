@@ -297,6 +297,7 @@ PLATFORMS
   x86_64-darwin-22
 
 DEPENDENCIES
+  actionpack (>= 7.0.5.1)
   activerecord (>= 7.0.4.1)
   autoprefixer-rails
   aws-sdk-ecs (~> 1)

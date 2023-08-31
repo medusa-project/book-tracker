@@ -30,6 +30,7 @@ gem 'uiuc_lib_ad', git: 'https://github.com/UIUCLibrary/uiuc_lib_ad.git'
 gem "rack", ">= 2.2.6.4"
 gem "activerecord", ">= 7.0.4.1"
 gem "rails-html-sanitizer", ">= 1.4.4"
+gem "actionpack", ">= 7.0.5.1"
 
 group :development do
   gem 'listen'
