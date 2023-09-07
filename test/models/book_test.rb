@@ -83,4 +83,87 @@ class BookTest < ActiveSupport::TestCase
     assert_not_nil Book.find_by_obj_id(123)
     assert_not_nil Book.find_by_obj_id(234)
   end
+
+  test 'internet_archive_url returns correct url based on IA identifier' do
+    b1 = books(:one) #fixture data
+    assert_equal "https://archive.org/details/#{b1.ia_identifier}", b1.internet_archive_url
+
+  end
+
+  test 'hathitrust_handle works only if book exists in hathitrust' do 
+    b1 = books(:one)
+    b4 = books(:four)
+
+    assert !b1.exists_in_hathitrust
+    assert_equal "", b1.hathitrust_handle
+
+    assert b4.exists_in_hathitrust
+    assert_equal "https://hdl.handle.net/2027/uiuc.#{b4.obj_id}", b4.hathitrust_handle
+  end
+
+  test 'params_from_marcxml_record extracts individual data and returns hash' do 
+    b5 = books(:five)
+    doc = Nokogiri::XML(b5.raw_marcxml)
+    # namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
+    # key = b5.source_path
+    nodes = doc.css('controlfield[@tag = 001]')
+    # book_params = { source_path: key }
+    # book_params[:raw_marcxml] = b5.raw_marcxml 
+    # record = book_params[:raw_marcxml]
+    bib = nodes.first.content 
+    # record = doc.css('record').to_xml(indent: 4)
+    objid = doc.css('datafield[@tag = 955]').css('subfield[@code = \'b\']').first.content
+    # require 'pry'; binding.pry 
+    assert_equal b5.bib_id.to_s, bib 
+    assert_equal 14, objid.split(//).length #since it's a google record should be a barcode (14 characters)
+  end
+
+  test 'as_json returns book data as json data' do 
+    b2 = books(:two)
+
+    data = 
+      
+        {id: b2.id, bib_id: 2, oclc_number: "MyString", 
+        obj_id: "2", title: "MyString", volume: "MyString", 
+        author: "MyString", language: nil, subjects: nil, 
+        date: "MyString", url: nil, catalog_url: b2.uiuc_catalog_url, hathitrust_url: nil, 
+        hathitrust_rights: "MyString", hathitrust_access: nil, internet_archive_identifier: "MyString",
+        internet_archive_url: nil, created_at: b2.created_at,
+        updated_at: b2.updated_at}
+      
+
+    assert_equal data, b2.as_json
+  end
+
+  test 'service returns which type of record the book is from' do 
+    b5 = books(:five)
+    b6 = books(:six)
+
+    assert_equal Service::GOOGLE, b5.service
+    assert_equal Service::INTERNET_ARCHIVE, b6.service
+    #make assertion for internet archive
+  end
+
+  test 'to_csv returns correct csv format of book data' do 
+    
+    b2 = books(:two)
+    expected = "#{b2.bib_id},#{b2.id},#{b2.oclc_number},#{b2.obj_id},#{b2.title},#{b2.author},#{b2.volume},#{b2.date},#{b2.ia_identifier},#{b2.hathitrust_handle},#{b2.exists_in_hathitrust},#{b2.exists_in_internet_archive},#{b2.exists_in_google}"
+
+    expected_csv = <<-CSV
+        2,298486374,MyString,2,MyString,MyString,MyString,MyString,MyString,,false,false,false
+        CSV
+    assert_equal expected_csv.strip, expected
+  end
+
+
+  test 'uiuc_catalog_url returns the bib_id with prefix 99 and suffix 12205899' do 
+    b1 = books(:one)
+    bibid = b1.bib_id.to_s
+    base_url = 'https://i-share-uiu.primo.exlibrisgroup.com/permalink/01CARLI_UIU/gpjosq/alma'
+    prefix   = '99'
+    suffix   = '12205899'
+
+    assert bibid.present?
+    assert_equal [base_url, prefix, bibid, suffix].join, b1.uiuc_catalog_url
+  end
 end
