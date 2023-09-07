@@ -101,21 +101,14 @@ class BookTest < ActiveSupport::TestCase
     assert_equal "https://hdl.handle.net/2027/uiuc.#{b4.obj_id}", b4.hathitrust_handle
   end
 
-  test 'params_from_marcxml_record extracts individual data and returns hash' do 
+  test 'params_from_marcxml_record extracts individual data and returns hash' do
     b5 = books(:five)
-    doc = Nokogiri::XML(b5.raw_marcxml)
-    # namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
-    # key = b5.source_path
-    nodes = doc.css('controlfield[@tag = 001]')
-    # book_params = { source_path: key }
-    # book_params[:raw_marcxml] = b5.raw_marcxml 
-    # record = book_params[:raw_marcxml]
-    bib = nodes.first.content 
-    # record = doc.css('record').to_xml(indent: 4)
-    objid = doc.css('datafield[@tag = 955]').css('subfield[@code = \'b\']').first.content
-    # require 'pry'; binding.pry 
-    assert_equal b5.bib_id.to_s, bib 
-    assert_equal 14, objid.split(//).length #since it's a google record should be a barcode (14 characters)
+    key = b5.source_path
+    xml_file = File.read('test/fixtures/files/sample.xml')
+    record = Nokogiri::XML(xml_file).root 
+
+    assert_not_nil Book.params_from_marcxml_record(key, record)
+    assert_equal Hash, Book.params_from_marcxml_record(key, record).class 
   end
 
   test 'as_json returns book data as json data' do 
@@ -141,18 +134,17 @@ class BookTest < ActiveSupport::TestCase
 
     assert_equal Service::GOOGLE, b5.service
     assert_equal Service::INTERNET_ARCHIVE, b6.service
-    #make assertion for internet archive
   end
 
   test 'to_csv returns correct csv format of book data' do 
     
     b2 = books(:two)
-    expected = "#{b2.bib_id},#{b2.id},#{b2.oclc_number},#{b2.obj_id},#{b2.title},#{b2.author},#{b2.volume},#{b2.date},#{b2.ia_identifier},#{b2.hathitrust_handle},#{b2.exists_in_hathitrust},#{b2.exists_in_internet_archive},#{b2.exists_in_google}"
-
-    expected_csv = <<-CSV
-        2,298486374,MyString,2,MyString,MyString,MyString,MyString,MyString,,false,false,false
-        CSV
-    assert_equal expected_csv.strip, expected
+    # expected = "#{b2.bib_id},#{b2.id},#{b2.oclc_number},#{b2.obj_id},#{b2.title},#{b2.author},#{b2.volume},#{b2.date},#{b2.ia_identifier},#{b2.hathitrust_handle},#{b2.exists_in_hathitrust},#{b2.exists_in_internet_archive},#{b2.exists_in_google}"
+    expected_csv = CSV.generate() do |csv|
+      csv << ["#{b2.bib_id}", "#{b2.id}", "#{b2.oclc_number}", "#{b2.obj_id}", "#{b2.title}", "#{b2.author}", "#{b2.volume}", "#{b2.date}", "#{b2.ia_identifier}", "#{b2.hathitrust_handle}", "#{b2.exists_in_hathitrust}", "#{b2.exists_in_internet_archive}", "#{b2.exists_in_google}"]
+    end
+  
+    assert_equal expected_csv, b2.to_csv({})
   end
 
 
