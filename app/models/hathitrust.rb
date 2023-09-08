@@ -136,49 +136,65 @@ class Hathitrust
   #
   # @return The path of the HathiFile
   #
+  # TODO - Take into account if Net::HTTP needs to handle a redirect 
+  def check_redirect(uri)
+    uri      = URI.parse('https://www.hathitrust.org/hathifiles')
+    response = Net::HTTP.get_response(uri)
+    
+    if response.is_a?(Net::HTTPRedirection)
+      response = response['Location']
+    else
+      response 
+    end
+  end
+  
+  # TODO - Figure out how to extract the correct css element to retrieve the latest HathiFile
   def get_hathifile(task)
     # As there is no single URI for the latest HathiFile, we have to scrape
     # the HathiFile listing out of the index HTML page.
     task.update!(name: 'Checking HathiTrust: downloading HathiFile index...')
     puts task.name
-
     uri      = URI.parse('https://www.hathitrust.org/hathifiles')
     response = Net::HTTP.get_response(uri)
+    check_redirect(uri)
     page     = Nokogiri::HTML(response.body)
 
     # Scrape the URI of the latest HathiFile out of the index
     node = page.css('div#content-area table.sticky-enabled a').
-        select{ |h| h.text.start_with?('hathi_full_') }.
-        sort{ |x,y| x.text <=> y.text }.reverse[0]
-    uri          = node['href']
-    gz_filename  = node.text
-    txt_filename = gz_filename.chomp('.gz')
-    gz_pathname  = File.join(TEMP_DIR, gz_filename)
-    txt_pathname = File.join(TEMP_DIR, txt_filename)
-
-    # If we already have it, return its pathname instead of downloading it.
-    return txt_pathname if File.exists?(txt_pathname)
+                  select{|h| h.text.start_with?('hathi_full_')}.
+                  sort{ |x,y| x.text <=> y.text }.reverse[0]
+    
+      uri          = node['href']
+      gz_filename  = node.text
+      txt_filename = gz_filename.chomp('.gz')
+      gz_pathname  = File.join(TEMP_DIR, gz_filename)
+      txt_pathname = File.join(TEMP_DIR, txt_filename)
+      
+      # If we already have it, return its pathname instead of downloading it.
+    
+      return txt_pathname if File.exists?(txt_pathname)
+    
 
     # Otherwise, delete any older HathiFiles that may exist, as they are now
     # out-of-date.
     # (This code is from when the application ran in a persistent VM; now
     # that it runs in ephemeral containers, it's not needed anymore, but it
     # doesn't hurt.)
-    Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
-        each { |f| File.delete(f) }
+      Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
+          each { |f| File.delete(f) }
 
-    # And progressively download the new one (because it's big)
-    task.name = "Checking HathiTrust: downloading the latest HathiFile "\
-    "(#{gz_filename})..."
-    task.save!
-    puts task.name
+      # And progressively download the new one (because it's big)
+      task.name = "Checking HathiTrust: downloading the latest HathiFile "\
+      "(#{gz_filename})..."
+      task.save!
+      puts task.name
 
-    FileUtils::mkdir_p(TEMP_DIR)
-    Net::HTTP.get_response(URI.parse(uri)) do |res|
-      res.read_body do |chunk|
-        File.open(gz_pathname, 'ab') { |file|
-          file.write(chunk)
-        }
+      FileUtils::mkdir_p(TEMP_DIR)
+      Net::HTTP.get_response(URI.parse(uri)) do |res|
+        res.read_body do |chunk|
+          File.open(gz_pathname, 'ab') { |file|
+            file.write(chunk)
+          }
       end
     end
 
@@ -191,3 +207,22 @@ class Hathitrust
   end
 
 end
+
+
+    # table = page.css('table.btable').first
+
+    # if table
+    #   tbody = table.at('tbody')
+
+    #   if tbody
+    #     node = tbody.select{|h| h.text.start_with?('hathi_full_')}.
+    #               sort{ |x,y| x.text <=> y.text }.reverse[0]
+    #   end
+  
+      # node = tbody.select{|h| h.text.start_with?('hathi_full_')}.
+      #               sort{ |x,y| x.text <=> y.text }.reverse[0]
+      # uri = node['href']
+      # node = page.css('table.btable').
+      #     select{ |h| h.text.start_with?('hathi_full_') }.
+      #     sort{ |x,y| x.text <=> y.text }.reverse[0]
+      # uri          = node['href']
