@@ -22,6 +22,7 @@ class Hathitrust
   #
   def check(task = nil)
     raise 'Another HathiTrust check is in progress.' unless self.class.check_authorized?
+    puts "Hello"
 
     task_args = {
         name: 'Checking HathiTrust',
@@ -140,9 +141,12 @@ class Hathitrust
   def check_redirect(uri)
     uri      = URI.parse('https://www.hathitrust.org/hathifiles')
     response = Net::HTTP.get_response(uri)
-    
+
     if response.is_a?(Net::HTTPRedirection)
       response = response['Location']
+      puts 'Redirected' 
+      # can remove the puts statement if needed
+      # I included it to see if the method works as expected
     else
       response 
     end
@@ -158,21 +162,21 @@ class Hathitrust
     response = Net::HTTP.get_response(uri)
     check_redirect(uri)
     page     = Nokogiri::HTML(response.body)
-
     # Scrape the URI of the latest HathiFile out of the index
-    node = page.css('div#content-area table.sticky-enabled a').
+    # node = page.css('div#content-area table.sticky-enabled a').
+    node = page.css('.btable-wrapper table.btable tbody tr td a').
                   select{|h| h.text.start_with?('hathi_full_')}.
-                  sort{ |x,y| x.text <=> y.text }.reverse[0]
+                  sort{ |x,y| x.text <=> y.text }.reverse[0]  
     
       uri          = node['href']
       gz_filename  = node.text
       txt_filename = gz_filename.chomp('.gz')
       gz_pathname  = File.join(TEMP_DIR, gz_filename)
-      txt_pathname = File.join(TEMP_DIR, txt_filename)
-      
+      txt_pathname = File.join(TEMP_DIR, txt_filename)  
       # If we already have it, return its pathname instead of downloading it.
-    
+      
       return txt_pathname if File.exists?(txt_pathname)
+
     
 
     # Otherwise, delete any older HathiFiles that may exist, as they are now
@@ -183,7 +187,7 @@ class Hathitrust
       Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
           each { |f| File.delete(f) }
 
-      # And progressively download the new one (because it's big)
+  #     # And progressively download the new one (because it's big)
       task.name = "Checking HathiTrust: downloading the latest HathiFile "\
       "(#{gz_filename})..."
       task.save!
@@ -205,6 +209,7 @@ class Hathitrust
 
     txt_pathname
   end
+  
 
 end
 
