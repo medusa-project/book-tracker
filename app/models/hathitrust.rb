@@ -245,35 +245,3 @@ end
       # txt_pathname = File.join(TEMP_DIR, txt_filename)
 
       ### ORIGINAL CODE ###
-
-# accessing the latest file in JS console in browswer: 
-
-# const elements = document.querySelector('.btable-wrapper table.btable tbody tr td a');
-# const matchingElements = [];
-# elements.forEach((element) => {
-#   const textContent = element.textContent;
-#   if (textContent.startsWith('hathi_full_')) {
-#     matchingElements.push(element);
-#   }
-# });
-
-# console.log(matchingElements);
-
-# [a, a, a]
-
-# matchingElements.sort((x, y) => {
-#   const textX = x.textContent;
-#   const textY = y.textContent;
-#   return textX.localeCompare(textY);
-# });
-
-# matchingElements.reverse();
-
-# matchingElements.forEach((element) => {
-#   const hrefVal = element.href;
-#   console.log(hrefVal);
-# });
-
-# hathi_full_1
-# hathi_full_2
-# hathi_full_3 
