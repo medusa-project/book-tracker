@@ -14,15 +14,14 @@ class Hathitrust
         where('status IN (?)', [Task::Status::RUNNING]).count == 0
   end
 
-  ##
-  # Checks HathiTrust by downloading the latest HathiFile
-  # (http://www.hathitrust.org/hathifiles).
-  #
-  # @param task [Task] Optional. If not provided, one will be created.
-  #
+  # ##
+  # # Checks HathiTrust by downloading the latest HathiFile
+  # # (http://www.hathitrust.org/hathifiles).
+  # #
+  # # @param task [Task] Optional. If not provided, one will be created.
+  # #
   def check(task = nil)
     raise 'Another HathiTrust check is in progress.' unless self.class.check_authorized?
-    puts "Hello"
 
     task_args = {
         name: 'Checking HathiTrust',
@@ -48,7 +47,7 @@ class Hathitrust
 
       num_lines = File.foreach(pathname).count
 
-      # http://www.hathitrust.org/hathifiles_description
+  #     http://www.hathitrust.org/hathifiles_description
       File.open(pathname).each_with_index do |line, index|
         parts = line.split("\t")
         if parts[5] == nuc_code
@@ -92,19 +91,19 @@ class Hathitrust
     end
   end
 
-  ##
-  # Invokes a rake task via an ECS task to check the service.
-  #
-  # @param task [Task]
-  # @return [void]
-  #
+  # ##
+  # # Invokes a rake task via an ECS task to check the service.
+  # #
+  # # @param task [Task]
+  # # @return [void]
+  # #
   def check_async(task)
     unless Rails.env.production? or Rails.env.demo?
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
     end
 
-    # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
+  #   # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
     config = Configuration.instance
     ecs = Aws::ECS::Client.new
     args = {
@@ -130,27 +129,36 @@ class Hathitrust
     ecs.run_task(args)
   end
 
-  private
-
+  
   ##
   # Downloads the latest HathiFile.
   #
   # @return The path of the HathiFile
   #
   # TODO - Take into account if Net::HTTP needs to handle a redirect 
-  def check_redirect(uri)
-    uri      = URI.parse('https://www.hathitrust.org/hathifiles')
-    response = Net::HTTP.get_response(uri)
 
-    if response.is_a?(Net::HTTPRedirection)
-      response = response['Location']
-      puts 'Redirected' 
-      # can remove the puts statement if needed
-      # I included it to see if the method works as expected
-    else
-      response 
-    end
-  end
+ 
+    # if response.code == "302"
+    #   new_location = response['Location']
+    #   uri = URI.parse(new_location)
+    #   response = Net::HTTP.get_response(uri)
+    #   page     = Nokogiri::HTML(response.body)
+    # end
+      
+  # def check_redirect
+  #   uri      = URI.parse('https://www.hathitrust.org/hathifiles')
+  #   response = Net::HTTP.get_response(uri)
+    
+  #   if response.is_a?(Net::HTTPRedirection)
+  #     response = response['Location']
+  #     puts 'Redirected' 
+  #     # can remove the puts statement if needed
+  #     # I included it to see if the method works as expected
+  #   else
+  #     response 
+  #   end
+  # end
+  private
   
   # TODO - Figure out how to extract the correct css element to retrieve the latest HathiFile
   def get_hathifile(task)
@@ -158,49 +166,57 @@ class Hathitrust
     # the HathiFile listing out of the index HTML page.
     task.update!(name: 'Checking HathiTrust: downloading HathiFile index...')
     puts task.name
-    uri      = URI.parse('https://www.hathitrust.org/hathifiles')
+
+    uri      = URI.parse("https://www.hathitrust.org/member-libraries/resources-for-librarians/data-resources/hathifiles/")
     response = Net::HTTP.get_response(uri)
-    check_redirect(uri)
     page     = Nokogiri::HTML(response.body)
+
+
     # Scrape the URI of the latest HathiFile out of the index
-    # node = page.css('div#content-area table.sticky-enabled a').
-    node = page.css('.btable-wrapper table.btable tbody tr td a').
-                  select{|h| h.text.start_with?('hathi_full_')}.
-                  sort{ |x,y| x.text <=> y.text }.reverse[0]  
-    
-      uri          = node['href']
-      gz_filename  = node.text
-      txt_filename = gz_filename.chomp('.gz')
-      gz_pathname  = File.join(TEMP_DIR, gz_filename)
-      txt_pathname = File.join(TEMP_DIR, txt_filename)  
-      # If we already have it, return its pathname instead of downloading it.
-      
-      return txt_pathname if File.exists?(txt_pathname)
 
-    
 
+    # returns <a> elements
+    # for each of the <a> elements extract the text for each element
+    # if the text starts with 'hathi_full_'
+    
+    # sort those 'hathi_full_' <a> elements by their text id, reverse the order, and 
+    # extract the first one (output should be something like: hathi_full_2020202.txt.gz)
+
+    node = page.css('.btable-wrapper table.btable tbody tr td a')
+                    .select{ |h| h.text.start_with?('hathi_full_') }
+                    .sort{ |x,y| x.text <=> y.text }.reverse[0]
+    
+    uri          = node['href']
+    gz_filename  = node.text
+    txt_filename = gz_filename.chomp('.gz')
+    gz_pathname  = File.join(TEMP_DIR, gz_filename)
+    txt_pathname = File.join(TEMP_DIR, txt_filename)  
+
+    # If we already have it, return its pathname instead of downloading it.
+    return txt_pathname if File.exists?(txt_pathname)
     # Otherwise, delete any older HathiFiles that may exist, as they are now
     # out-of-date.
     # (This code is from when the application ran in a persistent VM; now
     # that it runs in ephemeral containers, it's not needed anymore, but it
     # doesn't hurt.)
-      Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
-          each { |f| File.delete(f) }
 
-  #     # And progressively download the new one (because it's big)
-      task.name = "Checking HathiTrust: downloading the latest HathiFile "\
-      "(#{gz_filename})..."
-      task.save!
-      puts task.name
+    Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
+      each { |f| File.delete(f) }
 
-      FileUtils::mkdir_p(TEMP_DIR)
-      Net::HTTP.get_response(URI.parse(uri)) do |res|
-        res.read_body do |chunk|
-          File.open(gz_pathname, 'ab') { |file|
-            file.write(chunk)
-          }
-      end
+  #   And progressively download the new one (because it's big)
+    task.name = "Checking HathiTrust: downloading the latest HathiFile "\
+    "(#{gz_filename})..."
+    task.save!
+    puts task.name
+
+    FileUtils::mkdir_p(TEMP_DIR)
+    Net::HTTP.get_response(URI.parse(uri)) do |res|
+      res.read_body do |chunk|
+        File.open(gz_pathname, 'ab') { |file|
+          file.write(chunk)
+      }
     end
+  end
 
     task.name = 'Checking HathiTrust: unzipping the HathiFile...'
     task.save!
@@ -213,21 +229,51 @@ class Hathitrust
 
 end
 
+     
 
-    # table = page.css('table.btable').first
+      
 
-    # if table
-    #   tbody = table.at('tbody')
+      ### ORIGINAL CODE ###
 
-    #   if tbody
-    #     node = tbody.select{|h| h.text.start_with?('hathi_full_')}.
-    #               sort{ |x,y| x.text <=> y.text }.reverse[0]
-    #   end
-  
-      # node = tbody.select{|h| h.text.start_with?('hathi_full_')}.
-      #               sort{ |x,y| x.text <=> y.text }.reverse[0]
-      # uri = node['href']
-      # node = page.css('table.btable').
+      # node = page.css('div#content-area table.sticky-enabled a').
       #     select{ |h| h.text.start_with?('hathi_full_') }.
       #     sort{ |x,y| x.text <=> y.text }.reverse[0]
       # uri          = node['href']
+      # gz_filename  = node.text
+      # txt_filename = gz_filename.chomp('.gz')
+      # gz_pathname  = File.join(TEMP_DIR, gz_filename)
+      # txt_pathname = File.join(TEMP_DIR, txt_filename)
+
+      ### ORIGINAL CODE ###
+
+# accessing the latest file in JS console in browswer: 
+
+# const elements = document.querySelector('.btable-wrapper table.btable tbody tr td a');
+# const matchingElements = [];
+# elements.forEach((element) => {
+#   const textContent = element.textContent;
+#   if (textContent.startsWith('hathi_full_')) {
+#     matchingElements.push(element);
+#   }
+# });
+
+# console.log(matchingElements);
+
+# [a, a, a]
+
+# matchingElements.sort((x, y) => {
+#   const textX = x.textContent;
+#   const textY = y.textContent;
+#   return textX.localeCompare(textY);
+# });
+
+# matchingElements.reverse();
+
+# matchingElements.forEach((element) => {
+#   const hrefVal = element.href;
+#   console.log(hrefVal);
+# });
+
+# hathi_full_1
+# hathi_full_2
+# hathi_full_3 
