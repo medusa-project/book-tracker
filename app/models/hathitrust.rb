@@ -135,52 +135,26 @@ class Hathitrust
   #
   # @return The path of the HathiFile
   #
-  # TODO - Take into account if Net::HTTP needs to handle a redirect 
-
- 
-    # if response.code == "302"
-    #   new_location = response['Location']
-    #   uri = URI.parse(new_location)
-    #   response = Net::HTTP.get_response(uri)
-    #   page     = Nokogiri::HTML(response.body)
-    # end
       
-  # def check_redirect
-  #   uri      = URI.parse('https://www.hathitrust.org/hathifiles')
-  #   response = Net::HTTP.get_response(uri)
-    
-  #   if response.is_a?(Net::HTTPRedirection)
-  #     response = response['Location']
-  #     puts 'Redirected' 
-  #     # can remove the puts statement if needed
-  #     # I included it to see if the method works as expected
-  #   else
-  #     response 
-  #   end
-  # end
   private
-  
-  # TODO - Figure out how to extract the correct css element to retrieve the latest HathiFile
+
   def get_hathifile(task)
     # As there is no single URI for the latest HathiFile, we have to scrape
     # the HathiFile listing out of the index HTML page.
     task.update!(name: 'Checking HathiTrust: downloading HathiFile index...')
     puts task.name
 
-    uri      = URI.parse("https://www.hathitrust.org/member-libraries/resources-for-librarians/data-resources/hathifiles/")
-    response = Net::HTTP.get_response(uri)
-    page     = Nokogiri::HTML(response.body)
+    base_url     = 'https://www.hathitrust.org'
+    response     = Net::HTTP.get_response(URI('https://www.hathitrust.org/hathifiles'))
 
+    location     = response['location']
+    res          = base_url + location 
+
+    new_response = Net::HTTP.get_response(URI(res))
+
+    page         = Nokogiri::HTML(new_response.body)
 
     # Scrape the URI of the latest HathiFile out of the index
-
-
-    # returns <a> elements
-    # for each of the <a> elements extract the text for each element
-    # if the text starts with 'hathi_full_'
-    
-    # sort those 'hathi_full_' <a> elements by their text id, reverse the order, and 
-    # extract the first one (output should be something like: hathi_full_2020202.txt.gz)
 
     node = page.css('.btable-wrapper table.btable tbody tr td a')
                     .select{ |h| h.text.start_with?('hathi_full_') }
@@ -225,23 +199,17 @@ class Hathitrust
 
     txt_pathname
   end
-  
-
 end
 
-     
 
-      
-
-      ### ORIGINAL CODE ###
-
-      # node = page.css('div#content-area table.sticky-enabled a').
-      #     select{ |h| h.text.start_with?('hathi_full_') }.
-      #     sort{ |x,y| x.text <=> y.text }.reverse[0]
-      # uri          = node['href']
-      # gz_filename  = node.text
-      # txt_filename = gz_filename.chomp('.gz')
-      # gz_pathname  = File.join(TEMP_DIR, gz_filename)
-      # txt_pathname = File.join(TEMP_DIR, txt_filename)
-
-      ### ORIGINAL CODE ###
+  #   uri      = URI.parse('https://www.hathitrust.org/hathifiles')
+  #   response = Net::HTTP.get_response(uri)
+    
+  #   if response.is_a?(Net::HTTPRedirection)
+  #     response = response['Location']
+  #     puts 'Redirected' 
+  #     # can remove the puts statement if needed
+  #     # I included it to see if the method works as expected
+  #   else
+  #     response 
+  #   end
