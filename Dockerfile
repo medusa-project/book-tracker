@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
   libpq-dev
 
 RUN mkdir app
-WORKDIR app
+WORKDIR /app
 
 # Copy the Gemfile as well as the Gemfile.lock and install gems.
 # This is a separate step so the dependencies will be cached.
