@@ -15,7 +15,8 @@ ENV RAILS_SERVE_STATIC_FILES=true
 RUN apt-get update && apt-get install -y \
   build-essential \
   curl \
-  git 
+  git \
+  libpq-dev
 
 # Sets the working directory
 RUN mkdir app 
@@ -27,7 +28,7 @@ WORKDIR /app
 COPY Gemfile Gemfile.lock ./
 RUN gem install bundler \ 
     && bundle config set without 'development' \
-    && bundle install --jobs 20 --retry 5
+    && bundle install 
 
 # Copy the main application except what's in dockerignore.
 COPY . ./
