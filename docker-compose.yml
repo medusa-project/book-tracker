@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  postgres: 
+    hostname: postgres
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_DB: book_tracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres 
+
+  book-tracker:
+    build: 
+      context: . 
+      dockerfile: docker/book-tracker-test/Dockerfile
+    environment:
+      RAILS_ENV: test
+    depends_on:
+      - postgres 
+
