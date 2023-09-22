@@ -144,15 +144,18 @@ class Hathitrust
     task.update!(name: 'Checking HathiTrust: downloading HathiFile index...')
     puts task.name
 
-    base_url     = 'https://www.hathitrust.org'
-    response     = Net::HTTP.get_response(URI('https://www.hathitrust.org/hathifiles'))
-
+    uri          = URI.parse('https://www.hathitrust.org/hathifiles')
+    response     = Net::HTTP.get_response(uri)
     location     = response['location']
+    base_url     = 'https://www.hathitrust.org'
     res          = base_url + location 
 
-    new_response = Net::HTTP.get_response(URI(res))
-
-    page         = Nokogiri::HTML(new_response.body)
+    if response.code.start_with?("3")
+      new_response = Net::HTTP.get_response(URI(res))
+      page         = Nokogiri::HTML(new_response.body)
+    else
+      page         = Nokogiri::HTML(response.body)
+    end
 
     # Scrape the URI of the latest HathiFile out of the index
 
