@@ -103,7 +103,7 @@ class Hathitrust
           'Elsewhere, use a rake task instead.'
     end
 
-  # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
+    # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
     config = Configuration.instance
     ecs = Aws::ECS::Client.new
     args = {
@@ -168,6 +168,7 @@ class Hathitrust
 
     # If we already have it, return its pathname instead of downloading it.
     return txt_pathname if File.exists?(txt_pathname)
+
     # Otherwise, delete any older HathiFiles that may exist, as they are now
     # out-of-date.
     # (This code is from when the application ran in a persistent VM; now
@@ -175,7 +176,7 @@ class Hathitrust
     # doesn't hurt.)
 
     Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
-      each { |f| File.delete(f) }
+        each { |f| File.delete(f) }
 
     # And progressively download the new one (because it's big)
     task.name = "Checking HathiTrust: downloading the latest HathiFile "\
