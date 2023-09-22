@@ -12,9 +12,11 @@ services:
   book-tracker:
     build: 
       context: . 
-      dockerfile: docker/book-tracker-test/Dockerfile
+      dockerfile: docker/book-tracker/Dockerfile-test
     environment:
       RAILS_ENV: test
+    ports:
+      - "3000:3000"
     depends_on:
       - postgres 
 
