@@ -14,12 +14,12 @@ class Hathitrust
         where('status IN (?)', [Task::Status::RUNNING]).count == 0
   end
 
-  # ##
-  # # Checks HathiTrust by downloading the latest HathiFile
-  # # (http://www.hathitrust.org/hathifiles).
-  # #
-  # # @param task [Task] Optional. If not provided, one will be created.
-  # #
+  ##
+  # Checks HathiTrust by downloading the latest HathiFile
+  # (http://www.hathitrust.org/hathifiles).
+  #
+  # @param task [Task] Optional. If not provided, one will be created.
+  #
   def check(task = nil)
     raise 'Another HathiTrust check is in progress.' unless self.class.check_authorized?
 
@@ -47,7 +47,7 @@ class Hathitrust
 
       num_lines = File.foreach(pathname).count
 
-  #     http://www.hathitrust.org/hathifiles_description
+      # http://www.hathitrust.org/hathifiles_description
       File.open(pathname).each_with_index do |line, index|
         parts = line.split("\t")
         if parts[5] == nuc_code
@@ -91,19 +91,19 @@ class Hathitrust
     end
   end
 
-  # ##
-  # # Invokes a rake task via an ECS task to check the service.
-  # #
-  # # @param task [Task]
-  # # @return [void]
-  # #
+  ##
+  # Invokes a rake task via an ECS task to check the service.
+  #
+  # @param task [Task]
+  # @return [void]
+  #
   def check_async(task)
     unless Rails.env.production? or Rails.env.demo?
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
     end
 
-  #   # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
+  # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
     config = Configuration.instance
     ecs = Aws::ECS::Client.new
     args = {
@@ -129,6 +129,7 @@ class Hathitrust
     ecs.run_task(args)
   end
 
+  private
   
   ##
   # Downloads the latest HathiFile.
@@ -136,7 +137,6 @@ class Hathitrust
   # @return The path of the HathiFile
   #
       
-  private
 
   def get_hathifile(task)
     # As there is no single URI for the latest HathiFile, we have to scrape
@@ -177,7 +177,7 @@ class Hathitrust
     Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
       each { |f| File.delete(f) }
 
-  #   And progressively download the new one (because it's big)
+    # And progressively download the new one (because it's big)
     task.name = "Checking HathiTrust: downloading the latest HathiFile "\
     "(#{gz_filename})..."
     task.save!
@@ -200,16 +200,3 @@ class Hathitrust
     txt_pathname
   end
 end
-
-
-  #   uri      = URI.parse('https://www.hathitrust.org/hathifiles')
-  #   response = Net::HTTP.get_response(uri)
-    
-  #   if response.is_a?(Net::HTTPRedirection)
-  #     response = response['Location']
-  #     puts 'Redirected' 
-  #     # can remove the puts statement if needed
-  #     # I included it to see if the method works as expected
-  #   else
-  #     response 
-  #   end
