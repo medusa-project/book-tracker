@@ -130,31 +130,44 @@ class Hathitrust
   end
 
   private
-
+  
   ##
   # Downloads the latest HathiFile.
   #
   # @return The path of the HathiFile
   #
+      
+
   def get_hathifile(task)
     # As there is no single URI for the latest HathiFile, we have to scrape
     # the HathiFile listing out of the index HTML page.
     task.update!(name: 'Checking HathiTrust: downloading HathiFile index...')
     puts task.name
 
-    uri      = URI.parse('https://www.hathitrust.org/hathifiles')
-    response = Net::HTTP.get_response(uri)
-    page     = Nokogiri::HTML(response.body)
+    uri          = URI.parse('https://www.hathitrust.org/hathifiles')
+    response     = Net::HTTP.get_response(uri)
+    location     = response['location']
+    base_url     = 'https://www.hathitrust.org'
+    res          = base_url + location 
+
+    if response.code.start_with?("3")
+      new_response = Net::HTTP.get_response(URI(res))
+      page         = Nokogiri::HTML(new_response.body)
+    else
+      page         = Nokogiri::HTML(response.body)
+    end
 
     # Scrape the URI of the latest HathiFile out of the index
-    node = page.css('div#content-area table.sticky-enabled a').
-        select{ |h| h.text.start_with?('hathi_full_') }.
-        sort{ |x,y| x.text <=> y.text }.reverse[0]
+
+    node = page.css('.btable-wrapper table.btable tbody tr td a')
+                    .select{ |h| h.text.start_with?('hathi_full_') }
+                    .sort{ |x,y| x.text <=> y.text }.reverse[0]
+    
     uri          = node['href']
     gz_filename  = node.text
     txt_filename = gz_filename.chomp('.gz')
     gz_pathname  = File.join(TEMP_DIR, gz_filename)
-    txt_pathname = File.join(TEMP_DIR, txt_filename)
+    txt_pathname = File.join(TEMP_DIR, txt_filename)  
 
     # If we already have it, return its pathname instead of downloading it.
     return txt_pathname if File.exists?(txt_pathname)
@@ -164,6 +177,7 @@ class Hathitrust
     # (This code is from when the application ran in a persistent VM; now
     # that it runs in ephemeral containers, it's not needed anymore, but it
     # doesn't hurt.)
+
     Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
         each { |f| File.delete(f) }
 
@@ -178,9 +192,9 @@ class Hathitrust
       res.read_body do |chunk|
         File.open(gz_pathname, 'ab') { |file|
           file.write(chunk)
-        }
-      end
+      }
     end
+  end
 
     task.name = 'Checking HathiTrust: unzipping the HathiFile...'
     task.save!
@@ -189,5 +203,4 @@ class Hathitrust
 
     txt_pathname
   end
-
 end
