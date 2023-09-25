@@ -9,14 +9,11 @@ ENV RAILS_SERVE_STATIC_FILES=true
 
 # Install dependencies
 # Ensures the package lists inside the image are up to date
-# and the -y flag is a 'yes' to any prompts to install packages
-# Here I included curl for purposes of health checks
-# I did not include libpq-dev because a separate container will connect to postgres db
 RUN apt-get update && apt-get install -y \
   build-essential \
   curl \
   git \
-  libpq-dev
+  libpq-dev 
 
 # Sets the working directory
 RUN mkdir app 
