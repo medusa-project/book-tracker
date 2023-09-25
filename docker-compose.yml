@@ -8,13 +8,13 @@ services:
       POSTGRES_DB: book_tracker
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres 
+    ports:
+      - "5432:5432"
 
   book-tracker:
     build: 
       context: . 
-      dockerfile: docker/book-tracker/Dockerfile-test
-    environment:
-      RAILS_ENV: test
+      dockerfile: docker/book-tracker-app/Dockerfile
     ports:
       - "3000:3000"
     depends_on:
