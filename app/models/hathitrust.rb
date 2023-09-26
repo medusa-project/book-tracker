@@ -199,7 +199,7 @@ class Hathitrust
     task.name = 'Checking HathiTrust: unzipping the HathiFile...'
     task.save!
     puts task.name
-    `gunzip #{gz_pathname}`
+    `gunzip "#{gz_pathname}"`
 
     txt_pathname
   end
