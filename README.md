@@ -106,6 +106,17 @@ are basically just wrapper scripts around Docker and
 $ rails-container-scripts/redeploy.sh <demo or production>
 ```
 
+Note that when you try to build an image for the first time from an ARM Mac,
+you may get an error message like:
+
+```
+ERROR: Multiple platforms feature is currently not supported for docker driver.
+Please switch to a different driver (eg. "docker buildx create --use")
+```
+
+In this case, do what the message suggests, and run
+`docker buildx create --use`. You will only have to do it once.
+
 ## Import books & check tasks
 
 The buttons in the web interface at `/tasks` send requests to the ECS API
