@@ -37,7 +37,8 @@ class Hathitrust
     config = Configuration.instance
     pathname = nil
     begin
-      pathname = get_hathifile(task)
+      uri      = find_hathifile_url(task)
+      pathname = download_hathifile(uri, task)
       nuc_code = config.library_nuc_code
 
       task.update!(name: 'Checking HathiTrust: compiling a row count...')
@@ -127,14 +128,10 @@ class Hathitrust
     ecs.run_task(args)
   end
 
+
   private
   
-  ##
-  # Downloads the latest HathiFile.
-  #
-  # @return [String] The path of the HathiFile.
-  #
-  def get_hathifile(task)
+  def find_hathifile_url(task)
     # As there is no single URI for the latest HathiFile, we have to scrape
     # the HathiFile listing out of the index HTML page.
     task.update!(name: 'Checking HathiTrust: downloading HathiFile index...')
@@ -144,7 +141,7 @@ class Hathitrust
     response     = Net::HTTP.get_response(uri)
     location     = response['location']
     base_url     = 'https://www.hathitrust.org'
-    res          = base_url + location 
+    res          = base_url + location
 
     if response.code.start_with?("3")
       new_response = Net::HTTP.get_response(URI(res))
@@ -158,14 +155,19 @@ class Hathitrust
                    .select{ |h| h.text.start_with?('hathi_full_') }
                    .sort{ |x,y| x.text <=> y.text }
                    .reverse[0]
-    uri      = node['href']
-    filename = node.text
+    node['href']
+  end
 
-    # We'll download it into a Tempfile (it's gzipped) which we will need to
-    # decompress.
+  ##
+  # @param uri [String] The URI/URL at which the HathiFile resides.
+  # @param task [Task]
+  # @return [String] Pathname of the downloaded HathiFile.
+  #
+  def download_hathifile(uri, task)
+    filename = File.basename(uri)
     Tempfile.open(%w[hathifile, .gz]) do |gz_tempfile|
       task.update!(name: "Checking HathiTrust: downloading the latest HathiFile "\
-                         "(#{filename})...")
+        "(#{filename})...")
       puts task.name
 
       # Progressively download it (it's big).
@@ -181,10 +183,10 @@ class Hathitrust
       task.update!(name: 'Checking HathiTrust: unzipping the HathiFile...')
       puts task.name
 
-      temp_dir = File.dirname(gz_tempfile.path)
       `gunzip "#{gz_tempfile.path}"`
 
       return gz_tempfile.path.chomp(".gz")
     end
   end
+
 end
