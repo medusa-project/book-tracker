@@ -42,10 +42,12 @@ class Hathitrust
       pathname = get_hathifile(task)
       nuc_code = config.library_nuc_code
 
-      task.update!(name: 'Checking HathiTrust: scanning the HathiFile...')
+      task.update!(name: 'Checking HathiTrust: compiling a row count...')
       puts task.name
 
       num_lines = File.foreach(pathname).count
+
+      task.update!(name: 'Checking HathiTrust: scanning the HathiFile...')
 
       # http://www.hathitrust.org/hathifiles_description
       File.open(pathname).each_with_index do |line, index|
