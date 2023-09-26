@@ -185,7 +185,7 @@ class Hathitrust
 
     # And progressively download the new one (because it's big)
     task.name = "Checking HathiTrust: downloading the latest HathiFile "\
-    "(#{gz_filename})..."
+                "(#{gz_filename})..."
     task.save!
     puts task.name
 
@@ -194,9 +194,9 @@ class Hathitrust
       res.read_body do |chunk|
         File.open(gz_pathname, 'ab') { |file|
           file.write(chunk)
-      }
+        }
+      end
     end
-  end
 
     task.name = 'Checking HathiTrust: unzipping the HathiFile...'
     task.save!
