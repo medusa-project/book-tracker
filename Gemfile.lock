@@ -115,7 +115,7 @@ GEM
     erubi (1.12.0)
     erubis (2.7.0)
     execjs (2.8.1)
-    ffi (1.15.4)
+    ffi (1.16.2)
     font-awesome-sass (5.15.1)
       sassc (>= 1.11)
     globalid (1.1.0)
@@ -145,7 +145,8 @@ GEM
       railties (>= 4.2.0)
       thor (>= 0.14, < 2.0)
     json (2.6.2)
-    libv8-node (16.10.0.0-x86_64-darwin)
+    libv8-node (18.16.0.0-arm64-darwin)
+    libv8-node (18.16.0.0-x86_64-darwin)
     listen (3.7.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
@@ -158,8 +159,8 @@ GEM
     marcel (1.0.2)
     method_source (1.0.0)
     mini_mime (1.1.2)
-    mini_racer (0.5.0)
-      libv8-node (~> 16.10.0.0)
+    mini_racer (0.8.0)
+      libv8-node (~> 18.16.0.0)
     minitest (5.19.0)
     net-imap (0.2.3)
       digest
@@ -177,6 +178,8 @@ GEM
       net-protocol
       timeout
     nio4r (2.5.9)
+    nokogiri (1.15.4-arm64-darwin)
+      racc (~> 1.4)
     nokogiri (1.15.4-x86_64-darwin)
       racc (~> 1.4)
     omniauth (2.0.4)
@@ -285,6 +288,7 @@ GEM
     zeitwerk (2.5.4)
 
 PLATFORMS
+  arm64-darwin-22
   x86_64-darwin-21
   x86_64-darwin-22
 
