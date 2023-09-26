@@ -4,8 +4,6 @@
 #
 class Hathitrust
 
-  TEMP_DIR = Rails.root.join('tmp')
-
   ##
   # @return [Boolean] Whether an invocation of check() is authorized.
   #
@@ -134,10 +132,8 @@ class Hathitrust
   ##
   # Downloads the latest HathiFile.
   #
-  # @return The path of the HathiFile
+  # @return [String] The path of the HathiFile.
   #
-      
-
   def get_hathifile(task)
     # As there is no single URI for the latest HathiFile, we have to scrape
     # the HathiFile listing out of the index HTML page.
@@ -158,49 +154,37 @@ class Hathitrust
     end
 
     # Scrape the URI of the latest HathiFile out of the index
+    node     = page.css('.btable-wrapper table.btable tbody tr td a')
+                   .select{ |h| h.text.start_with?('hathi_full_') }
+                   .sort{ |x,y| x.text <=> y.text }
+                   .reverse[0]
+    uri      = node['href']
+    filename = node.text
 
-    node = page.css('.btable-wrapper table.btable tbody tr td a')
-                    .select{ |h| h.text.start_with?('hathi_full_') }
-                    .sort{ |x,y| x.text <=> y.text }.reverse[0]
-    
-    uri          = node['href']
-    gz_filename  = node.text
-    txt_filename = gz_filename.chomp('.gz')
-    gz_pathname  = File.join(TEMP_DIR, gz_filename)
-    txt_pathname = File.join(TEMP_DIR, txt_filename)  
+    # We'll download it into a Tempfile (it's gzipped) which we will need to
+    # decompress.
+    Tempfile.open(%w[hathifile, .gz]) do |gz_tempfile|
+      task.update!(name: "Checking HathiTrust: downloading the latest HathiFile "\
+                         "(#{filename})...")
+      puts task.name
 
-    # If we already have it, return its pathname instead of downloading it.
-    return txt_pathname if File.exists?(txt_pathname)
-
-    # Otherwise, delete any older HathiFiles that may exist, as they are now
-    # out-of-date.
-    # (This code is from when the application ran in a persistent VM; now
-    # that it runs in ephemeral containers, it's not needed anymore, but it
-    # doesn't hurt.)
-
-    Dir.glob(File.join(TEMP_DIR, 'hathi_full_*.txt')).
-        each { |f| File.delete(f) }
-
-    # And progressively download the new one (because it's big)
-    task.name = "Checking HathiTrust: downloading the latest HathiFile "\
-                "(#{gz_filename})..."
-    task.save!
-    puts task.name
-
-    FileUtils::mkdir_p(TEMP_DIR)
-    Net::HTTP.get_response(URI.parse(uri)) do |res|
-      res.read_body do |chunk|
-        File.open(gz_pathname, 'ab') { |file|
-          file.write(chunk)
-        }
+      # Progressively download it (it's big).
+      Net::HTTP.get_response(URI.parse(uri)) do |response|
+        response.read_body do |chunk|
+          File.open(gz_tempfile.path, 'ab') do |file|
+            file.write(chunk)
+          end
+        end
       end
+
+      # Decompress it.
+      task.update!(name: 'Checking HathiTrust: unzipping the HathiFile...')
+      puts task.name
+
+      temp_dir = File.dirname(gz_tempfile.path)
+      `gunzip "#{gz_tempfile.path}"`
+
+      return gz_tempfile.path.chomp(".gz")
     end
-
-    task.name = 'Checking HathiTrust: unzipping the HathiFile...'
-    task.save!
-    puts task.name
-    `gunzip "#{gz_pathname}"`
-
-    txt_pathname
   end
 end
