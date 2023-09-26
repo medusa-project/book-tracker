@@ -54,21 +54,19 @@ class Hathitrust
         parts = line.split("\t")
         if parts[5] == nuc_code
           book = Book.find_by_obj_id(parts[0].split('.').last)
-          if book
-            if !book.exists_in_hathitrust or
-                book.hathitrust_access != parts[1] or
-                book.hathitrust_rights != parts[2]
-              book.exists_in_hathitrust = true
-              book.hathitrust_access = parts[1]
-              book.hathitrust_rights = parts[2]
-              book.save!
-            end
+          next unless book
+          if !book.exists_in_hathitrust ||
+              book.hathitrust_access != parts[1] ||
+              book.hathitrust_rights != parts[2]
+            book.update!(exists_in_hathitrust: true,
+                         hathitrust_access:    parts[1],
+                         hathitrust_rights:    parts[2])
           end
         end
 
-        if index % 20000 == 0
-          task.percent_complete = (index + 1).to_f / num_lines.to_f
-          task.save!
+        if index % 1000 == 0
+          task.update!(percent_complete: (index + 1).to_f / num_lines.to_f)
+          print "\r#{task.name} (#{(task.percent_complete * 100).round(2)}%)"
         end
       end
     rescue SystemExit, Interrupt => e
