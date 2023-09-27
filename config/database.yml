@@ -13,7 +13,7 @@ test_config = File.exists?(path) ? YAML.load(File.read(path)) : {}
 default: &default
   adapter:  postgresql
   encoding: unicode
-  host: postgres 
+  host:     postgres 
   pool:     <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout:  5000
   min_messages: warning
@@ -32,7 +32,7 @@ development:
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  host:     postgres
+  host:     <%= test_config['db_host'] %>
   port:     <%= test_config['db_port'] %>
   database: <%= test_config['db_database'] %>
   username: <%= test_config['db_username'] %>
