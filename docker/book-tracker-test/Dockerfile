@@ -30,4 +30,6 @@ RUN gem install bundler \
 # Copy the main application except what's in dockerignore.
 COPY . ./
 
+RUN cp config/credentials/ci.yml config/credentials/test.yml 
+
 CMD ["bin/rails", "test"]
