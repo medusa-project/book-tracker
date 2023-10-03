@@ -1,10 +1,10 @@
 # N.B.: this must match the Ruby version in the Gemfile, and /.ruby-version.
 
 # Set the Base Image
-FROM ruby:3.0.3-slim 
+FROM ruby:3.0.3-slim
 
 # Set Environment Variables
-ENV RAILS_ENV=production
+ENV RAILS_ENV=development
 # Sends log output (log msgs/error msgs) to the standard output instead of saving to log files.
 ENV RAILS_LOG_TO_STDOUT=true
 # The app's web server is configured to serve static files (CSS, JS, etc) directly to client instead of serving from the app server.
@@ -27,10 +27,12 @@ WORKDIR /app
 COPY Gemfile Gemfile.lock ./
 RUN gem install bundler \
     && bundle config set --local without 'development test' \
-    && bundle install --jobs 20 --retry 5 
+    && bundle install --jobs 20 --retry 5
 
 # Copy the main application, except whatever is listed in .dockerignore.
 COPY . ./
+
+RUN cp config/credentials/development-docker.yml config/credentials/development.yml
 
 RUN bin/rails assets:precompile
 

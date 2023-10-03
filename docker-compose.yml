@@ -14,7 +14,7 @@ services:
   book-tracker:
     build: 
       context: . 
-      dockerfile: docker/book-tracker-app/Dockerfile
+      dockerfile: docker/book-tracker-development/Dockerfile
     ports:
       - "3000:3000"
     depends_on:
