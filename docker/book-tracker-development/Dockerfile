@@ -1,7 +1,7 @@
 # N.B.: this must match the Ruby version in the Gemfile, and /.ruby-version.
 
 # Set the Base Image
-FROM ruby:3.0.3-slim
+FROM ruby:3.2.2-slim
 
 # Set Environment Variables
 ENV RAILS_ENV=development

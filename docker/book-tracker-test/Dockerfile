@@ -1,5 +1,5 @@
 # Sets the Base Image w/slim tag for optimization
-FROM ruby:3.0.3-slim 
+FROM ruby:3.2.2-slim
 
 # Env variables set to test env
 ENV RAILS_ENV=test

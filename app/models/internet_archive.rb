@@ -128,7 +128,7 @@ class InternetArchive
     cache_pathname    = Rails.root.join('tmp')
     expected_pathname = File.join(cache_pathname, expected_filename)
 
-    unless File.exists?(expected_pathname)
+    unless File.exist?(expected_pathname)
       # Delete older downloads.
       # (This code is from when the application ran in a persistent VM; now
       # that it runs in ephemeral containers, it's not needed anymore, but it
@@ -159,7 +159,7 @@ class InternetArchive
         end
       rescue => e
         Rails.logger.error("InternetArchive.get_api_results(): #{e}")
-        File.delete(expected_pathname) if File.exists?(expected_pathname)
+        File.delete(expected_pathname) if File.exist?(expected_pathname)
         raise e
       end
     end
