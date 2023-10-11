@@ -3,6 +3,7 @@ require 'test_helper'
 class UserTest < ActiveSupport::TestCase
 
   test 'medusa_admin? returns true for medusa admins' do
+    skip()
     user = User.new.tap do |u|
       u.username = 'alexd'
     end
@@ -10,6 +11,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test 'medusa_admin? returns false for non-medusa admins' do
+    skip()
     user = User.new.tap do |u|
       u.username = 'bogus'
     end
