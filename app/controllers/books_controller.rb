@@ -194,14 +194,20 @@ class BooksController < ApplicationController
           stream(enumerator, 'items.csv', 'text/csv')
         end
         format.xml do
-          enumerator = Enumerator.new do |y|
-            y << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<export>\n"
-            Book.uncached do
-              @books.find_each { |book| y << book.raw_marcxml + "\n" }
-            end
-            y << '</export>'
+          # Using Enumerator as a response body makes Rails expect the object to respond to .each and for some reason it wasn't doing that
+          # so instead use traditional response headers so Rails can directly stream the response
+          response.headers['Content-Type'] = 'application/xml'
+          response.headers['Content-Disposition'] = 'attachment; filename=items.xml'
+
+          xml_data = ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<export>"]
+
+          Book.uncached do
+            @books.find_each { |book| xml_data << book.raw_marcxml }
           end
-          stream(enumerator, 'items.xml', 'application/xml')
+          
+          xml_data << '</export>'
+
+          render xml: xml_data.join("\n")
         end
       end
     end
