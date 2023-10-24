@@ -73,6 +73,13 @@ test "return http 200 status request for XML format" do
     assert_equal 200, response.status
   end
 
+  test "return 'application/json' for response header Content-Type" do 
+    
+    get books_path(format: :json)
+
+    assert_equal "application/json; charset=utf-8", response.header['Content-Type']
+  end
+
   test "return http 200 status request for CSV format" do 
 
     get books_path(format: :csv)
