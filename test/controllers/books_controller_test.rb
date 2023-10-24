@@ -35,7 +35,22 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 # check the Content-Type header, 
 # and ideally check that the response body looks like valid HTML/CSV/JSON/XML.
 
-  test "return http 200 status request for XML format" do
+test "return http 200 status request for HTML format" do
+  
+    get books_path(format: :html)
+
+    assert_response :success
+    assert_equal 200, response.status 
+end
+
+test "return 'text/html; charset=utf-8' for Content-Type" do 
+
+    get books_path(format: :html)
+
+    assert_equal "text/html; charset=utf-8", response.header['Content-Type']
+end
+
+test "return http 200 status request for XML format" do
 
     get books_path(format: :xml)
 
