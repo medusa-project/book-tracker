@@ -1,5 +1,7 @@
 class BooksController < ApplicationController
 
+  include ActionController::Live
+
   WINDOW_SIZE = 500
 
   protect_from_forgery except: :index
@@ -182,26 +184,28 @@ class BooksController < ApplicationController
           }, except: :raw_marcxml
         end
         format.csv do
-          # Use Enumerator in conjunction with some custom headers to
-          # stream the results, as an alternative to send_data
-          # which would require them to be loaded into memory first.
-          enumerator = Enumerator.new do |y|
-            y << Book::CSV_HEADER.to_csv
-            # Book.uncached disables ActiveRecord caching that would prevent
-            # previous find_each batches from being garbage-collected.
-            Book.uncached { @books.find_each { |book| y << book.to_csv } }
+          response.header['Content-Type'] = "text/csv"
+          # See inline comment in format.xml.
+          send_stream(filename: "items.csv") do |stream|
+            stream.write(Book::CSV_HEADER.to_csv)
+            Book.uncached do
+              @books.find_each { |book| stream.write(book.to_csv) }
+            end
           end
-          stream(enumerator, 'items.csv', 'text/csv')
         end
         format.xml do
-          enumerator = Enumerator.new do |y|
-            y << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<export>\n"
+          response.header['Content-Type'] = "application/xml"
+          # send_stream() streams results to the client, in contrast to
+          # send_data() which would require them to be loaded into memory
+          # first. (Note that there may be 100s of thousands of results, and
+          # the resulting XML may be several GB.)
+          send_stream(filename: "items.xml") do |stream|
+            stream.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<export>\n")
             Book.uncached do
-              @books.find_each { |book| y << book.raw_marcxml + "\n" }
+              @books.find_each { |book| stream.write(book.raw_marcxml + "\n") }
             end
-            y << '</export>'
+            stream.write('</export>')
           end
-          stream(enumerator, 'items.xml', 'application/xml')
         end
       end
     end
