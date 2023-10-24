@@ -27,4 +27,30 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_includes json_response.keys, :id
     assert_equal 980190962, json_response[:id]
   end
+
+
+# In BooksController.index(), there are four formats in the respond_to block: 
+# HTML, CSV, JSON, and XML. 
+# We should have tests for each of these that check for an HTTP 200 response, 
+# check the Content-Type header, 
+# and ideally check that the response body looks like valid HTML/CSV/JSON/XML.
+
+  test "return http 200 status request for XML format" do
+
+    get books_path(format: :xml)
+
+    assert_response :success
+    assert_equal 200, response.status 
+    assert_equal "application/xml", response.header['Content-Type']
+  end
+
+  # test "return http 200 status request for JSON format" do 
+  # end
+
+  # test "return http 200 status request for CSV format" do 
+  # end
+
+  # test "return http 200 status request for XML format" do 
+  # end
+
 end
