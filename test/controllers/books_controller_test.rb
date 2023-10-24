@@ -47,8 +47,14 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   # test "return http 200 status request for JSON format" do 
   # end
 
-  # test "return http 200 status request for CSV format" do 
-  # end
+  test "return http 200 status request for CSV format" do 
+
+    get books_path(format: :csv)
+
+    assert_response :success 
+    assert_equal 200, response.status 
+    assert_equal "text/csv", response.header['Content-Type']
+  end
 
   # test "return http 200 status request for XML format" do 
   # end
