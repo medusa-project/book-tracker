@@ -40,7 +40,13 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     get books_path(format: :xml)
 
     assert_response :success
-    assert_equal 200, response.status 
+    assert_equal 200, response.status
+  end
+
+  test "return 'application/xml' for response header Content-Type" do 
+    
+    get books_path(format: :xml)
+
     assert_equal "application/xml", response.header['Content-Type']
   end
 
@@ -53,10 +59,12 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success 
     assert_equal 200, response.status 
-    assert_equal "text/csv", response.header['Content-Type']
   end
 
-  # test "return http 200 status request for XML format" do 
-  # end
+  test "return 'text/csv' for response header Content-Type" do 
 
+    get books_path(format: :csv)
+
+    assert_equal "text/csv", response.header['Content-Type']
+  end
 end
