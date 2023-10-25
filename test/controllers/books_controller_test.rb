@@ -97,6 +97,7 @@ test "return http 200 status request for HTML format" do
     valid_json = JSON.parse(response.body)
 
     assert_equal valid_json["results"][0]["id"], 868521 
+    assert_equal valid_json.class, Hash 
   end
 
   test "return http 200 status request for CSV format" do 
