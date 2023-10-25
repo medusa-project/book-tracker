@@ -10,7 +10,13 @@ services:
       POSTGRES_PASSWORD: postgres 
     ports:
       - "5432:5432"
-
+  minio:
+    image: minio/minio
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    hostname: minio
+    command: server /data
   book-tracker:
     build: 
       context: . 
@@ -18,5 +24,6 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - postgres 
+      - minio
+      - postgres
 

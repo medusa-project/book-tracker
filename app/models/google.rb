@@ -46,8 +46,9 @@ class Google
       task = Task.create!(task_args)
     end
 
-    config = Configuration.instance
-    client = get_client
+    config       = Configuration.instance
+    store        = TempStore.instance
+    bucket       = config.storage.dig(:temp, :bucket)
     obj_id_batch = []
 
     begin
@@ -56,13 +57,11 @@ class Google
       # few extra seconds.
       task.update(name: 'Checking Google: counting the inventory...')
       num_lines = 0
-      response = client.get_object(bucket: config.temp_bucket,
-                                   key: @inventory_key)
+      response  = store.get_object(bucket: bucket, key: @inventory_key)
       response.body.each_line { num_lines += 1 }
 
       # Iterate through the lines.
-      response = client.get_object(bucket: config.temp_bucket,
-                                   key: @inventory_key)
+      response = store.get_object(bucket: bucket, key: @inventory_key)
       response.body.each_line.with_index do |line, index|
         # Columns:
         # [0] barcode
@@ -99,8 +98,7 @@ class Google
       puts task.name
     ensure
       set_existing(obj_id_batch)
-      client.delete_object(bucket: config.temp_bucket,
-                           key: @inventory_key)
+      store.delete_object(bucket: bucket, key: @inventory_key)
     end
   end
 
@@ -143,11 +141,6 @@ class Google
   end
 
   private
-
-  def get_client
-    @client = Aws::S3::Client.new unless @client
-    @client
-  end
 
   ##
   # @param batch [Array<String>] Batch of object IDs.

@@ -49,26 +49,24 @@ class RecordSource
     end
 
     begin
-      config = Configuration.instance
-      client = Aws::S3::Client.new
+      config     = Configuration.instance
+      store      = BookStore.instance
+      bucket     = BookStore::BUCKET
+      key_prefix = config.storage.dig(:books, :key_prefix)
 
       num_invalid_files = file_index = record_index = 0
       batch = []
-      client.list_objects(
-          bucket: config.book_bucket,
-          prefix: config.book_key_prefix).each do |list_response|
+      store.list_objects(bucket: bucket, prefix: key_prefix).each do |list_response|
         list_response.contents.each do |object|
           next unless object.key.downcase.end_with?('.xml')
 
           Rails.logger.debug("RecordSource.import(): getting object #{object.key}")
 
-          get_response = client.get_object(
-              bucket: config.book_bucket,
-              key: object.key)
-          data = get_response.body.read
+          get_response = store.get_object(bucket: bucket, key: object.key)
+          data         = get_response.body.read
 
           begin
-            doc = Nokogiri::XML(data, &:noblanks)
+            doc          = Nokogiri::XML(data, &:noblanks)
             doc.encoding = 'utf-8'
 
             doc.xpath('//marc:record', MARCXML_NAMESPACES).each do |record|
@@ -80,8 +78,8 @@ class RecordSource
               record_index += 1
               if record_index % 100 == 0
                 task.update(name: "Importing MARCXML records: "\
-                    "scanned #{record_index} records in #{file_index + 1} files "\
-                    "(no progress available)")
+                    "scanned #{record_index} records in #{file_index + 1} "\
+                    "files (no progress available)")
                 print "#{task.name.ljust(80)}\r"
               end
             end

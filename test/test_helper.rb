@@ -30,4 +30,26 @@ class ActiveSupport::TestCase
   def log_out 
     delete sign_out_path 
   end
+
+  ##
+  # Creates the S3 buckets (if necessary).
+  #
+  def setup_s3
+    # Book bucket
+    store  = BookStore.instance
+    store.create_bucket(bucket: BookStore::BUCKET) unless store.bucket_exists?
+    store.delete_objects
+    # Temp bucket
+    store  = TempStore.instance
+    store.create_bucket(bucket: TempStore::BUCKET) unless store.bucket_exists?
+    store.delete_objects
+  end
+
+  def teardown_s3
+    store = BookStore.instance
+    store.delete_objects if store.bucket_exists?
+    store = TempStore.instance
+    store.delete_objects if store.bucket_exists?
+  end
+
 end
