@@ -90,6 +90,15 @@ test "return http 200 status request for HTML format" do
     assert_equal "application/json; charset=utf-8", response.header['Content-Type']
   end
 
+  test "response body is valid JSON format" do 
+
+    get books_path(format: :json)
+
+    valid_json = JSON.parse(response.body)
+
+    assert_equal valid_json["results"][0]["id"], 868521 
+  end
+
   test "return http 200 status request for CSV format" do 
 
     get books_path(format: :csv)
