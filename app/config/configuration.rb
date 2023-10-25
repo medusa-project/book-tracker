@@ -32,7 +32,7 @@ class Configuration
   # @return [Object]
   #
   def get(key)
-    if Rails.env.development? or Rails.env.test?
+    if Rails.env.development? || Rails.env.test?
       read_unencrypted_config
       return @config[key.to_s]
     end
@@ -49,7 +49,7 @@ class Configuration
     unless @config
       raw_config = File.read(File.join(
           Rails.root, 'config', 'credentials', "#{Rails.env}.yml"))
-      @config = YAML.load(raw_config)
+      @config = HashWithIndifferentAccess.new(YAML.load(raw_config))
     end
   end
 
