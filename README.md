@@ -121,3 +121,12 @@ In this case, do what the message suggests, and run
 
 The buttons in the web interface at `/tasks` send requests to the ECS API
 to start tasks that invoke the various `books:*` rake tasks and then exit.
+
+## Update SAML certificates
+
+SAML certificates are stored in `config/certs`. The private keys from which the
+`sp-cert` files were generated are stored in the encrypted application
+configuration at `saml.sp_private_key`.
+
+To generate new SAML SP certificates, use the
+`saml:generate_sp_cert[environment]` rake task.
