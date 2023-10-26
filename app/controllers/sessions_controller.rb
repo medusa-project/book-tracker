@@ -4,6 +4,20 @@ class SessionsController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   ##
+  # Responds to `GET/POST /auth/failure`.
+  #
+  def auth_failed
+    message = params.dig("message") || "incorrect username and/or password"
+    message = "Login failed: #{message}"
+    if request.xhr?
+      render plain: message, status: :unauthorized
+    else
+      flash['error'] = message
+      redirect_to clear_and_return_return_path, allow_other_host: true
+    end
+  end
+
+  ##
   # Responds to POST /auth/:provider/callback
   #
   def create

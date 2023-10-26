@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   match '/auth/:provider/callback', to: 'sessions#create', via: [:get, :post],
         as: 'auth' # used by omniauth
+  match "/auth/failure", to: "sessions#auth_failed", as: :auth_failed, via: [:get, :post]
   match '/signout', to: 'sessions#destroy', via: :delete
 
   match 'books', to: 'books#index', as: :books, via: [:get, :post]

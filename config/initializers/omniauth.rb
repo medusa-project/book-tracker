@@ -27,3 +27,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 end
 
 OmniAuth.config.logger = Rails.logger
+OmniAuth.config.failure_raise_out_environments = %w[development demo]
+OmniAuth.config.on_failure = Proc.new { |env|
+  OmniAuth::FailureEndpoint.new(env).redirect_to_failure
+}
