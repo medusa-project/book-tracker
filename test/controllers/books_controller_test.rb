@@ -1,5 +1,4 @@
 require "test_helper"
-require "pry"
 
 class BooksControllerTest < ActionDispatch::IntegrationTest
   setup do
@@ -125,7 +124,15 @@ test "return http 200 status request for HTML format" do
   end
 
   test "response body is valid CSV format" do 
-    skip()
-  end
+    
+    get books_path(format: :csv)
 
+    csv = CSV.new(response.body, headers: true)
+    csv.each do |row|
+      row 
+    end
+    
+    assert_equal ["Bib ID", "Medusa ID", "OCLC Number", "Object ID", "Title", "Author", "Volume", "Date", "IA Identifier", "HathiTrust Handle", "Exists in HathiTrust", "Exists in IA", "Exists in Google"], csv.headers
+    assert_equal csv.class, CSV
+  end
 end
