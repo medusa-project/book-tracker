@@ -18,13 +18,15 @@ namespace :saml do
     rel_dest_path = File.join("config", "certs", "sp-cert-#{args[:environment]}.pem")
     abs_dest_path = File.join(Rails.root, rel_dest_path)
 
+    # N.B.: iTrust requires the CN to match the hostname
     cert = CryptUtils.generate_cert(key:          private_key,
                                     organization: "University of Illinois at Urbana-Champaign Library",
-                                    common_name:  "Medusa Book Tracker",
+                                    common_name:  config.dig(:hostname),
                                     not_after:    Time.now + 20.years)
 
     File.write(abs_dest_path, cert.to_pem)
-    puts "Done. Be sure to commit the new certificate to version control."
+    puts "Done. Be sure to commit the new certificate to version control, "\
+         "and update the application's iTrust record."
   end
 
 end
