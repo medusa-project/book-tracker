@@ -9,8 +9,6 @@ Bundler.require(*Rails.groups)
 module BookTracker
   class Application < Rails::Application
 
-    attr_accessor :shibboleth_host
-
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
 

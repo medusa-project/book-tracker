@@ -32,7 +32,7 @@ module SessionsHelper
 
   def signin_path
     (Rails.env.production? || Rails.env.demo?) ?
-      "/auth/shibboleth" : "/auth/developer"
+      "/auth/saml" : "/auth/developer"
   end
 
   def redirect_back_or(default)

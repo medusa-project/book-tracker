@@ -17,7 +17,6 @@ gem 'mini_racer', platforms: :ruby
 gem 'omniauth'
 gem "omniauth-rails_csrf_protection"
 gem "omniauth-saml"
-gem 'omniauth-shibboleth'
 gem 'pg'
 gem 'puma'
 gem 'rails', '~> 7'

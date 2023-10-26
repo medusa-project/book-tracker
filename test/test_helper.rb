@@ -6,15 +6,13 @@ class ActiveSupport::TestCase
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   fixtures :all
 
-  # Add more helper methods to be used by all tests here...
   ##
-# @param user [User]
-#
+  # @param user [User]
+  #
   def log_in
-    post "/auth/shibboleth/callback", env: {
+    post "/auth/saml/callback", env: {
       "omniauth.auth": {
-        provider:          "shibboleth",
-        "Shib-Session-ID": SecureRandom.hex,
+        provider:          "saml",
         uid:               'admin@email.com',
         info: {
           email: 'admin@email.com'
