@@ -13,7 +13,9 @@ class SessionsController < ApplicationController
       render plain: message, status: :unauthorized
     else
       flash['error'] = message
-      redirect_to clear_and_return_return_path, allow_other_host: true
+      return_url = session[:return_to] || session[:referer] || books_path
+      session[:return_to] = session[:referer] = nil
+      redirect_to return_url, allow_other_host: true
     end
   end
 
