@@ -14,8 +14,8 @@ class TempStore
   def self.client_options
     config                  = ::Configuration.instance
     opts                    = {}
-    opts[:region]           = config.storage.dig(:books, :region)
-    endpoint                = config.storage.dig(:books, :endpoint)
+    opts[:region]           = config.storage.dig(:temp, :region)
+    endpoint                = config.storage.dig(:temp, :endpoint)
     opts[:endpoint]         = endpoint if endpoint.present?
     opts[:force_path_style] = endpoint.present?
 
