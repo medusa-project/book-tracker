@@ -4,7 +4,6 @@ Rails.application.config.middleware.use OmniAuth::Builder do
   # if Rails.env.development?
   #   provider :developer
   # end
-end
 
   # Even though SAML isn't used in development/test, we configure it there
   # anyway in order to preview the metadata.
@@ -27,6 +26,7 @@ end
            certificate:            sp_cert,
            private_key:            config.saml[:sp_private_key],
            name_identifier_format: "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+           
 end
 
 OmniAuth.config.logger = Rails.logger
