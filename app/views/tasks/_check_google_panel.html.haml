@@ -1,12 +1,14 @@
 #check-google-modal.modal.fade{'aria-labelledby' => 'check-google-modal-label', :role => 'dialog', :tabindex => '-1'}
   .modal-dialog{:role => 'document'}
     .modal-content
+      = button_to 'Login with Google', '/auth/google_oauth2', class: 'btn btn-primary', id: 'google-signin-button'
       = form_tag(check_google_path, multipart: true, method: 'post') do
         .modal-header
           %h4#check-google-modal-label.modal-title Google
           %button.close{'aria-label' => 'Close', 'data-dismiss' => 'modal', :type => 'button'}
             %span{'aria-hidden' => 'true'} &times;
         .modal-body
+
           Google Books no longer supports programmatic harvesting of our book
           inventory. To check this service, follow these steps:
           %ol
@@ -27,6 +29,8 @@
             %li
               Click the "Check" button.
           %hr
+          
+
           = file_field_tag 'file'
         .modal-footer
           %button.btn.btn-default{'data-dismiss' => 'modal', :type => 'button'} Cancel
