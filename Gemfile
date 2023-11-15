@@ -15,6 +15,7 @@ gem 'jquery-rails'
 gem 'local_time'
 gem 'mini_racer', platforms: :ruby
 gem 'omniauth'
+gem 'omniauth-google-oauth2'
 gem "omniauth-rails_csrf_protection"
 gem "omniauth-saml"
 gem 'pg'
