@@ -22,8 +22,15 @@ class SessionsController < ApplicationController
   ##
   # Responds to POST /auth/:provider/callback
   #
-  def create
+  def create 
     auth_hash = request.env['omniauth.auth']
+    # session[:user_token] = auth_hash.credentials.token 
+    session[:user_email] = auth_hash.info.email 
+    redirect_to return_url 
+  end
+
+  def developer
+    auth_hash = request.env['omniauth.auth'] 
     if auth_hash and auth_hash[:uid]
       username = auth_hash[:uid].split('@').first
       user = User.new.tap do |u|
