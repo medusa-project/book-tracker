@@ -1,7 +1,10 @@
 Rails.application.config.middleware.use OmniAuth::Builder do
-  if Rails.env.development?
-    provider :developer
-  end
+  provider :google_oauth2, Rails.application.credentials.dig(:google, :client_id), Rails.application.credentials.dig(:google, :client_secret)
+  provider :developer
+  # if Rails.env.development?
+  #   provider :developer
+  # end
+end
 
   # Even though SAML isn't used in development/test, we configure it there
   # anyway in order to preview the metadata.
