@@ -123,10 +123,13 @@ class RecordSource
   # @return [void]
   #
   def import_async(task)
-    unless Rails.env.production? or Rails.env.demo?
+    unless Rails.env.production? or Rails.env.demo? 
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
     end
+
+    hathi_trust = Hathitrust.new
+    hathi_trust.check_async(task)
 
     # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
     config = Configuration.instance
