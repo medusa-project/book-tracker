@@ -6,8 +6,7 @@
 
 .alert.alert-light
   %i.fa.fa-info-circle
-  Import records first. Once that task is complete, check the other services
-  concurrently or in any order.
+  Importing records will automatically start the process to check HathiTrust and Internet Archive services.
 
 %table.table
   %tr
@@ -32,9 +31,6 @@
         = local_time_ago(@last_ht_check.completed_at)
       - else
         Never checked
-    %td
-      = form_tag(check_hathitrust_path, method: 'post') do
-        = submit_tag('Check', class: 'btn btn-primary btn-sm')
   %tr
     %td Internet Archive
     %td
@@ -44,8 +40,6 @@
       - else
         Never checked
     %td
-      = form_tag(check_internet_archive_path, method: 'post') do
-        = submit_tag('Check', class: 'btn btn-primary btn-sm')
   %tr
     %td Google
     %td
