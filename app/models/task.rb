@@ -51,10 +51,10 @@ class Task < ApplicationRecord
   end
 
   def import_task_completed?
-    if Rails.env.development?
+    if Rails.env.production? or Rails.env.demo?
+      status == Status::SUCCEEDED and service == Service::LOCAL_STORAGE
+    else
       status == Status::FAILED and service == Service::LOCAL_STORAGE
-    else 
-      status == Status::SUUCEEDED and service == Service::LOCAL_STORAGE
     end
   end
 
@@ -63,7 +63,11 @@ class Task < ApplicationRecord
     task = Task.create!(name: 'Preparing to check HathiTrust', 
                         service: Service::HATHITRUST,
                         status: Status::SUBMITTED)
-    hathi_trust.check_async(task)
+    if Rails.env.prorduction? or Rails.env.demo? 
+      hathi_trust.check_async(task)
+    else 
+      "This feature is not available in development mode"
+    end
   end
 
 
