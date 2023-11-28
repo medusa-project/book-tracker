@@ -1,5 +1,6 @@
-class Task < ApplicationRecord
+require_relative './hathitrust.rb'
 
+class Task < ApplicationRecord
   ##
   # An enum-like class.
   #
@@ -35,6 +36,7 @@ class Task < ApplicationRecord
 
   after_initialize :init
   before_save :constrain_progress, :auto_complete
+  after_save :trigger_hathitrust_check, if: :import_task_completed?
 
   def init
     self.status ||= Status::RUNNING
@@ -47,6 +49,23 @@ class Task < ApplicationRecord
       self.completed_at = Time.current
     end
   end
+
+  def import_task_completed?
+    if Rails.env.development?
+      status == Status::FAILED and service == Service::LOCAL_STORAGE
+    else 
+      status == Status::SUUCEEDED and service == Service::LOCAL_STORAGE
+    end
+  end
+
+  def trigger_hathitrust_check
+    hathi_trust = Hathitrust.new 
+    task = Task.create!(name: 'Preparing to check HathiTrust', 
+                        service: Service::HATHITRUST,
+                        status: Status::SUBMITTED)
+    hathi_trust.check_async(task)
+  end
+
 
   private
 
