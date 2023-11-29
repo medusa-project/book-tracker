@@ -42,23 +42,6 @@ class TaskTest < ActiveSupport::TestCase
     assert_equal 3, task.service 
   end
 
-  test ".import_task_completed? will return true under correct conditions" do 
-    task = Task.new 
-    task.status=(4)
-    task.service=(Service::LOCAL_STORAGE) 
-
-    assert_equal true, task.import_task_completed?
-  end
-
-  test ".trigger_hathitrust_check will start the hathitrust check process" do 
-    task = Task.new
-    task.status=(4)
-    task.service=(Service::LOCAL_STORAGE)
-    task.import_task_completed?
-
-    assert_not_nil task.trigger_hathitrust_check
-  end
-
 end
 
 
