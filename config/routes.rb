@@ -12,8 +12,6 @@ Rails.application.routes.draw do
 
   match 'check-google', to: 'tasks#check_google', via: :post,
         as: 'check_google'
-  match 'check-hathitrust', to: 'tasks#check_hathitrust', via: :post,
-        as: 'check_hathitrust'
   match 'check-internet-archive', to: 'tasks#check_internet_archive',
         via: :post, as: 'check_internet_archive'
   match 'import', to: 'tasks#import', via: :post
