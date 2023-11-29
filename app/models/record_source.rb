@@ -111,6 +111,10 @@ class RecordSource
                                 record_index, num_invalid_files),
                   status: Task::Status::SUCCEEDED)
       puts task.name
+      if Rails.env.production? || Rails.env.demo?
+        hathi_trust = Hathitrust.new
+        hathi_trust.check_async(task)
+      end
     ensure
       Book.analyze_table
     end
@@ -123,7 +127,7 @@ class RecordSource
   # @return [void]
   #
   def import_async(task)
-    unless Rails.env.production? or Rails.env.demo?
+    unless Rails.env.production? or Rails.env.demo? 
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
     end

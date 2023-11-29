@@ -1,5 +1,6 @@
-class Task < ApplicationRecord
 
+
+class Task < ApplicationRecord
   ##
   # An enum-like class.
   #
