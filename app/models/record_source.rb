@@ -114,6 +114,10 @@ class RecordSource
       if Rails.env.production? || Rails.env.demo?
         hathi_trust = Hathitrust.new
         hathi_trust.check_async(task)
+        if hathi_trust.check_async(task)
+          ia = InternetArchive.new 
+          ia.check_async(task)
+        end
       end
     ensure
       Book.analyze_table
