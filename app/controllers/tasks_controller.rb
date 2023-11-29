@@ -37,22 +37,6 @@ class TasksController < ApplicationController
   end
 
   ##
-  # Responds to POST /check-hathitrust
-  #
-  def check_hathitrust
-    task = Task.create!(name: 'Preparing to check HathiTrust',
-                        service: Service::HATHITRUST,
-                        status: Task::Status::SUBMITTED)
-    Hathitrust.new.check_async(task)
-  rescue => e
-    handle_error(e)
-  else
-    flash['success'] = 'HathiTrust check will begin momentarily.'
-  ensure
-    redirect_back fallback_location: tasks_path
-  end
-
-  ##
   # Responds to POST /check-internet-archive
   #
   def check_internet_archive
