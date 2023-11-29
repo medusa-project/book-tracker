@@ -111,6 +111,10 @@ class RecordSource
                                 record_index, num_invalid_files),
                   status: Task::Status::SUCCEEDED)
       puts task.name
+      if Rails.env.production? || Rails.env.demo?
+        hathi_trust = Hathitrust.new
+        hathi_trust.check_async(task)
+      end
     ensure
       Book.analyze_table
     end
@@ -127,9 +131,6 @@ class RecordSource
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
     end
-
-    hathi_trust = Hathitrust.new
-    hathi_trust.check_async(task)
 
     # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
     config = Configuration.instance
