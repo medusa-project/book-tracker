@@ -113,11 +113,9 @@ class RecordSource
       puts task.name
       if Rails.env.production? || Rails.env.demo?
         hathi_trust = Hathitrust.new
+        ia = InternetArchive.new 
         hathi_trust.check_async(task)
-        if hathi_trust.check_async(task)
-          ia = InternetArchive.new 
-          ia.check_async(task)
-        end
+        ia.check_async(task)
       end
     ensure
       Book.analyze_table
