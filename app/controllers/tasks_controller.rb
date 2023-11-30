@@ -37,22 +37,6 @@ class TasksController < ApplicationController
   end
 
   ##
-  # Responds to POST /check-internet-archive
-  #
-  def check_internet_archive
-    task = Task.create!(name: 'Preparing to check Internet Archive',
-                        service: Service::INTERNET_ARCHIVE,
-                        status: Task::Status::SUBMITTED)
-    InternetArchive.new.check_async(task)
-  rescue => e
-    handle_error(e)
-  else
-    flash['success'] = 'Internet Archive check will begin momentarily.'
-  ensure
-    redirect_back fallback_location: tasks_path
-  end
-
-  ##
   # Responds to POST /import
   #
   def import

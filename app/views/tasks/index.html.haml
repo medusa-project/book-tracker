@@ -6,7 +6,7 @@
 
 .alert.alert-light
   %i.fa.fa-info-circle
-  Importing records will automatically start the process to check HathiTrust service.
+  Importing records will automatically start the process to check HathiTrust and Internet Archive services.
 
 %table.table
   %tr
@@ -40,8 +40,6 @@
       - else
         Never checked
     %td
-      = form_tag(check_internet_archive_path, method: 'post') do
-        = submit_tag('Check', class: 'btn btn-primary btn-sm')
   %tr
     %td Google
     %td
