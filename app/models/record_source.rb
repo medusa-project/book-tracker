@@ -118,7 +118,6 @@ class RecordSource
         hathi_task = Task.create!(name: 'Preparing to check Hathitrust',
                           service: Service::HATHITRUST,
                           status: Task::Status::SUBMITTED)
-                          
         ia_task = Task.create!(name: 'Preparing to check Internet Archive',
                           service: Service::INTERNET_ARCHIVE,
                           status: Task::Status::SUBMITTED)
