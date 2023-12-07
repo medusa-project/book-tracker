@@ -200,11 +200,19 @@ class BooksController < ApplicationController
           # first. (Note that there may be 100s of thousands of results, and
           # the resulting XML may be several GB.)
           send_stream(filename: "items.xml") do |stream|
-            stream.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<export>\n")
-            Book.uncached do
-              @books.find_each { |book| stream.write(book.raw_marcxml + "\n") }
+
+            begin 
+              stream.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<export>\n")
+              Book.uncached do
+                @books.find_each { |book| stream.write(book.raw_marcxml + "\n") }
+              end
+              stream.write('</export>')
+              
+            rescue ClientDisconnected => e 
+              Rails.logger.error "#{e.message}"
+            ensure
+              stream.close 
             end
-            stream.write('</export>')
           end
         end
       end
