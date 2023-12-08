@@ -187,9 +187,16 @@ class BooksController < ApplicationController
           response.header['Content-Type'] = "text/csv"
           # See inline comment in format.xml.
           send_stream(filename: "items.csv") do |stream|
-            stream.write(Book::CSV_HEADER.to_csv)
-            Book.uncached do
-              @books.find_each { |book| stream.write(book.to_csv) }
+
+            begin 
+              stream.write(Book::CSV_HEADER.to_csv)
+              Book.uncached do
+                @books.find_each { |book| stream.write(book.to_csv) }
+              end
+            rescue ClientDisconnected => e 
+              Rails.logger.error "#{e.message}"
+            ensure 
+              stream.close 
             end
           end
         end
