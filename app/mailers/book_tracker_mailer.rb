@@ -5,12 +5,11 @@ class BookTrackerMailer < ApplicationMailer
   # see https://answers.uillinois.edu/illinois/page.php?id=47888
   NO_REPLY_ADDRESS = "no-reply@illinois.edu"
 
-  default from: "Book Tracker <#{::Configuration.instance.admin_email}>"
-
   def error(error_text)
     @error_text = error_text
+
     mail(reply_to: NO_REPLY_ADDRESS,
-         to:       ::Configuration.instance.admin_email,
+         to:       ::Configuration.instance.admin_emails,
          subject:  "#{subject_prefix} System Error")
   end
 
@@ -18,7 +17,8 @@ class BookTrackerMailer < ApplicationMailer
   # Used to test email delivery. See also the `mail:test` rake task.
   #
   def test(recipient)
-    mail(to: recipient, subject: "#{subject_prefix} Hello from Book Tracker")
+    from_emails = ::Configuration.instance.admin_emails.map{|email| email.to_s}
+    mail(from: from_emails, to: recipient, subject: "#{subject_prefix} Hello from Book Tracker")
   end
 
 
