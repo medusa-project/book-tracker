@@ -17,7 +17,8 @@ class BookTrackerMailer < ApplicationMailer
   # Used to test email delivery. See also the `mail:test` rake task.
   #
   def test(recipient)
-    from_emails = ::Configuration.instance.admin_emails.map{|email| email.to_s}
+    from_emails = ::Configuration.instance.admin_emails
+    
     mail(from: from_emails, to: recipient, subject: "#{subject_prefix} Hello from Book Tracker")
   end
 
