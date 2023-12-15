@@ -12,19 +12,22 @@ class BookTrackerMailerTest < ActionMailer::TestCase
 
     config = ::Configuration.instance
     assert_equal [BookTrackerMailer::NO_REPLY_ADDRESS], email.reply_to
-    assert_equal [config.admin_email], email.to
+    assert_equal config.admin_emails, email.to
+    
     assert_equal "[TEST: Book Tracker] System Error", email.subject
     assert_equal "Something broke\r\n\r\n", email.body.raw_source
   end
-
+  
   # test()
-
+  
   test "test() sends the expected email" do
+    
     recipient = "user@example.edu"
     email = BookTrackerMailer.test(recipient).deliver_now
     assert !ActionMailer::Base.deliveries.empty?
-
-    assert_equal [Configuration.instance.admin_email], email.from
+    
+    
+    assert_equal Configuration.instance.admin_emails, email.from
     assert_equal [recipient], email.to
     assert_equal "[TEST: Book Tracker] Hello from Book Tracker", email.subject
 
