@@ -1,3 +1,4 @@
+require 'aws-sdk-sqs'
 ##
 # Source of MARCXML records--currently an S3 bucket.
 #
@@ -43,6 +44,7 @@ class RecordSource
     if task
       Rails.logger.info('RecordSource.import(): updating provided Task')
       task.update!(task_args)
+
     else
       Rails.logger.info('RecordSource.import(): creating new Task')
       task = Task.create!(task_args)
@@ -111,6 +113,7 @@ class RecordSource
                                 record_index, num_invalid_files),
                   status: Task::Status::SUCCEEDED)
       puts task.name
+
       if Rails.env.production? || Rails.env.demo?
         hathi_trust = Hathitrust.new
         ia = InternetArchive.new 
@@ -124,6 +127,15 @@ class RecordSource
 
         hathi_trust.check_async(hathi_task)
         ia.check_async(ia_task)
+        sqs = Aws::SQS::Client.new(region: 'us-east-2')
+        queue_name = "book-tracker-demo"
+        queue_url = sqs.get_queue_url(queue_name: queue_name).queue_url
+        message = {status: "#{Book.where(exists_in_hathitrust: true).count} hathitrust record(s) updated and #{Book.where(exists_in_internet_archive: true).count} IA record(s) updated."}
+
+        queue.send_message({queue_url: queue_url, 
+                            message_body: message.to_json,
+                            message_attributes: {}})
+        Rails.logger.info("SQS message sent successfully")
       end
     ensure
       Book.analyze_table
