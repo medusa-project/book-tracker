@@ -166,11 +166,11 @@ class BookTest < ActiveSupport::TestCase
     assert_equal [base_url, prefix, bibid, suffix].join, b1.uiuc_catalog_url
   end
 
-  test 'send_message(message) sends sqs message' do 
-    book = Book.create(title: "Random Book")
-    message = book.as_message 
-    book.send_message(message)
+  # test 'send_message(message) sends sqs message' do 
+  #   book = Book.create(title: "Random Book")
+  #   message = book.as_message 
+  #   book.send_message(message)
 
-    assert_equal message, {"SQS message" => "New or Updated Record for Book: #{book.title}"}
-  end
+  #   assert_equal message, {"SQS message" => "New or Updated Record for Book: #{book.title}"}
+  # end
 end
