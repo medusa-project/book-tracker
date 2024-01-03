@@ -127,15 +127,6 @@ class RecordSource
 
         hathi_trust.check_async(hathi_task)
         ia.check_async(ia_task)
-        sqs = Aws::SQS::Client.new(region: 'us-east-2')
-        queue_name = "book-tracker-demo"
-        queue_url = sqs.get_queue_url(queue_name: queue_name).queue_url
-        message = {status: "#{Book.where(exists_in_hathitrust: true).count} hathitrust record(s) updated and #{Book.where(exists_in_internet_archive: true).count} IA record(s) updated."}
-
-        queue.send_message({queue_url: queue_url, 
-                            message_body: message.to_json,
-                            message_attributes: {}})
-        Rails.logger.info("SQS message sent successfully")
       end
     ensure
       Book.analyze_table
@@ -185,6 +176,10 @@ class RecordSource
   def upsert(batch)
     Rails.logger.debug("RecordSource.upsert(): upserting #{batch.length} records")
     Book.bulk_upsert(batch)
+    batch.each do |book|
+      message = book.as_message
+      book.send_message(message)
+    end
   ensure
     batch.clear
   end
