@@ -82,7 +82,7 @@ five:
   hathitrust_rights: nil
   hathitrust_access: nil
   source_path: "Google/20101208-1520.xml"
-  raw_marcxml: <%= File.read('test/fixtures/files/sample.xml') %>
+  raw_marcxml: "<%= File.read('test/fixtures/files/sample.xml').gsub('"', '\"') %>"
 
 six: 
   id: 868521

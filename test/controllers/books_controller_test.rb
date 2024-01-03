@@ -73,7 +73,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     valid_xml = Nokogiri::XML.parse(response.body)
 
-    assert_equal valid_xml.children[0].children[1].name, "record"
+    assert_equal valid_xml.children[0].children[1].name, "collection"
   end
 
   test "return http 200 status request for JSON format" do 
