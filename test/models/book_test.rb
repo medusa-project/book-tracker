@@ -19,8 +19,8 @@ class BookTest < ActiveSupport::TestCase
 
   test 'bulk_upsert works' do
     Book.destroy_all
-    rows = [
-        {
+    books = [
+      Book.new(
             author: 'Dr. Seuss',
             bib_id: 123,
             date: '1974',
@@ -37,9 +37,8 @@ class BookTest < ActiveSupport::TestCase
             source_path: '/dev/null',
             subject: nil,
             title: 'Green Eggs and Ham',
-            volume: nil
-        },
-        {
+            volume: nil),
+      Book.new(
             author: 'Dr. Seuss',
             bib_id: 234,
             date: '1975',
@@ -56,9 +55,8 @@ class BookTest < ActiveSupport::TestCase
             source_path: '/dev/null',
             subject: nil,
             title: 'The Lorax',
-            volume: nil
-        },
-        { # same obj_id as the first one
+            volume: nil),
+      Book.new( # same obj_id as the first one
             author: 'Dr. Seuss',
             bib_id: 123,
             date: '1975',
@@ -75,10 +73,9 @@ class BookTest < ActiveSupport::TestCase
             source_path: '/dev/null',
             subject: nil,
             title: 'The Lorax',
-            volume: nil
-        }
+            volume: nil)
     ]
-    Book.bulk_upsert(rows)
+    Book.bulk_upsert(books)
     assert_equal 2, Book.count
     assert_not_nil Book.find_by_obj_id(123)
     assert_not_nil Book.find_by_obj_id(234)
@@ -101,14 +98,24 @@ class BookTest < ActiveSupport::TestCase
     assert_equal "https://hdl.handle.net/2027/uiuc.#{b4.obj_id}", b4.hathitrust_handle
   end
 
-  test 'params_from_marcxml_record extracts individual data and returns hash' do
-    b5 = books(:five)
-    key = b5.source_path
-    xml_file = File.read('test/fixtures/files/sample.xml')
-    record = Nokogiri::XML(xml_file).root 
+  test 'from_marcxml_record returns a correct Book instance' do
+    namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
+    key        = "/this/doesnt/matter"
+    xml_file   = File.read('test/fixtures/files/sample.xml')
+    record     = Nokogiri::XML(xml_file).xpath("//marc:record", namespaces)
 
-    assert_not_nil Book.params_from_marcxml_record(key, record)
-    assert_equal Hash, Book.params_from_marcxml_record(key, record).class 
+    book = Book.from_marcxml_record(key: key, record: record)
+    assert_equal key, book.source_path
+    assert_equal 272087, book.bib_id
+    assert_equal "03493895", book.oclc_number
+    assert_equal "", book.author
+    assert_equal "National Clearinghouse on Aging thesaurus", book.title
+    assert_nil book.language
+    assert_equal "Gerontology||Aging", book.subject
+    assert_nil book.volume
+    assert_equal "1977.", book.date
+    assert_equal "30112048976390", book.obj_id
+    assert_nil book.ia_identifier
   end
 
   test 'as_json returns book data as json data' do 

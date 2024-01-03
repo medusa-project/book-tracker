@@ -72,7 +72,7 @@ class RecordSource
             doc.xpath('//marc:record', MARCXML_NAMESPACES).each do |record|
               Rails.logger.debug("RecordSource.import(): reading record #{record_index}")
 
-              batch << Book.params_from_marcxml_record(object.key, record)
+              batch << Book.from_marcxml_record(record: record, key: object.key)
               upsert_if_necessary(batch)
 
               record_index += 1
