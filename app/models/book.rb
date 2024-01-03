@@ -72,33 +72,35 @@ class Book < ApplicationRecord
   # Inserts or updates a batch of books in one SQL statement. This may be
   # faster (due to the table indexes) than using one statement per book.
   #
-  # @param rows [Enumerable<Hash<Symbol,Object>>] Enumerable of hashes with book
-  #             table column names as keys.
+  # @param books [Enumerable<Book>]
   # @return [void]
   #
-  def self.bulk_upsert(rows)
+  def self.bulk_upsert(books)
     # Duplicate object IDs will be refused due to the unique index on obj_id.
-    rows.uniq!{ |r| r[:obj_id] }
-    return if rows.empty?
+    books.uniq!(&:obj_id)
+    return if books.empty?
     sql = StringIO.new
-    
     sql << 'INSERT INTO books('
     sql << COLUMNS.join(', ')
     sql << ') VALUES '
     
     value_index = 0
-    rows.length.times do |index|
+    books.length.times do |index|
       sql << "\n\t("
       sql << COLUMNS.map{ |c| "$#{value_index += 1}" }.join(', ')
       sql << ')'
-      sql << ',' if index < rows.length - 1
+      sql << ',' if index < books.length - 1
     end
     
     not_null_bool_cols = %w(exists_in_google
       exists_in_hathitrust exists_in_internet_archive)
       
     binds = []
-    rows.each do |row|
+    books.each do |book|
+      row = {}
+      COLUMNS.map(&:to_sym).each do |col|
+        row[col] = book.send(col)
+      end
       row[:created_at] = 'NOW()'
       row[:updated_at] = 'NOW()'
       COLUMNS.each do |col|
@@ -129,72 +131,68 @@ class Book < ApplicationRecord
     end
   end
       
-      ##
-      # @param record Nokogiri element corresponding to a /collection/record
-      #               element in a MARCXML file.
-      # @param key [String] Object key of the MARCXML file.
-      # @return [Hash] Params hash for a Book.
-      #
-  def self.params_from_marcxml_record(key, record)
+  ##
+  # @param record Nokogiri element corresponding to a `/collection/record`
+  #               element in a MARCXML file.
+  # @param key [String] Object key of the MARCXML file in which the record
+  #                     resides.
+  # @return [Book] New instance, not yet persisted.
+  #
+  def self.from_marcxml_record(record:, key:)
     namespaces = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
-    book_params = {
-      source_path: key
-    }
-    
+    book = Book.new
+    book.source_path = key
     # raw MARCXML
-    book_params[:raw_marcxml] = record.to_xml(indent: 4)
+    book.raw_marcxml = record.to_xml(indent: 4)
     # extract bib ID
-    nodes = record.xpath('marc:controlfield[@tag = 001]', namespaces)
-    book_params[:bib_id] = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
+    nodes       = record.xpath('marc:controlfield[@tag = 001]', namespaces)
+    book.bib_id = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
     # extract OCLC no. from 035 subfield a
     nodes = record.
-    xpath('marc:datafield[@tag = 035][1]/marc:subfield[@code = \'a\']', namespaces)
-    book_params[:oclc_number] = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
+      xpath('marc:datafield[@tag = 035][1]/marc:subfield[@code = \'a\']', namespaces)
+    book.oclc_number = nodes.first.content.gsub(/[^0-9]/, '') if nodes.any?
     
     # extract author & title from 100 & 245 subfields a & b, stripping trailing
     # periods.
-    book_params[:author] = record.
-    xpath('marc:datafield[@tag = 100][1]/marc:subfield', namespaces).
-    map(&:content).join(' ').strip.chomp(".")
-    book_params[:title] = record.
-    xpath('marc:datafield[@tag = 245][1]/marc:subfield[@code = \'a\' or @code = \'b\']', namespaces).
-    map(&:content).join(' ').strip.chomp(".")
+    book.author = record.
+      xpath('marc:datafield[@tag = 100][1]/marc:subfield', namespaces).
+      map(&:content).join(' ').strip.chomp(".").force_encoding("UTF-8")
+    book.title = record.
+      xpath('marc:datafield[@tag = 245][1]/marc:subfield[@code = \'a\' or @code = \'b\']', namespaces).
+      map(&:content).join(' ').strip.chomp(".").force_encoding("UTF-8")
     
     # extract language from 008
     nodes = record.xpath('marc:controlfield[@tag = 008][1]', namespaces)
-    book_params[:language] = nodes.first.content[35..37] if nodes.any?
+    book.language = nodes.first.content[35..37] if nodes.any?
     
     # extract subject from 650 subfield a
     # N.B.: books may have more than one subject; in this case the subjects
     # are combined into one value separated by SUBJECT_DELIMITER, to avoid
-    # the unnecessary complexity of another table.
+    # the performance implications of another table.
     nodes = record.xpath('marc:datafield[@tag = 650]/marc:subfield[@code = \'a\']', namespaces)
-    book_params[:subject] = nodes.map{ |n| n.content.chomp(".") }.join(SUBJECT_DELIMITER)
+    book.subject = nodes.map{ |n| n.content.chomp(".") }.join(SUBJECT_DELIMITER)
     
     # extract volume from 955 subfield v
     nodes = record.xpath('marc:datafield[@tag = 955][1]/marc:subfield[@code = \'v\']', namespaces)
-    book_params[:volume] = nodes.first.content.strip if nodes.any?
+    book.volume = nodes.first.content.strip if nodes.any?
     
     # extract date from 260 subfield c
-    nodes = record.
-    xpath('marc:datafield[@tag = 260][1]/marc:subfield[@code = \'c\']', namespaces)
-    book_params[:date] = nodes.first.content.strip if nodes.any?
+    nodes = record.xpath('marc:datafield[@tag = 260][1]/marc:subfield[@code = \'c\']', namespaces)
+    book.date = nodes.first.content.strip if nodes.any?
     
     # extract object ID from 955 subfield b
     # For Google digitized volumes, this will be the barcode.
     # For Internet Archive digitized volumes, this will be the Ark ID.
     # For locally digitized volumes, this will be the bib ID (and other extensions)
-    nodes = record.
-    xpath('marc:datafield[@tag = 955]/marc:subfield[@code = \'b\']', namespaces)
+    nodes = record.xpath('marc:datafield[@tag = 955]/marc:subfield[@code = \'b\']', namespaces)
     # strip leading "uiuc."
-    book_params[:obj_id] = nodes.first.content.gsub(/^uiuc./, '').strip if nodes.any?
+    book.obj_id = nodes.first.content.gsub(/^uiuc./, '').strip if nodes.any?
     
     # extract IA identifier from 955 subfield q
-    nodes = record.
-    xpath('marc:datafield[@tag = 955]/marc:subfield[@code = \'q\']', namespaces)
-    book_params[:ia_identifier] = nodes.first.content.strip if nodes.any?
-    
-    book_params
+    nodes = record.xpath('marc:datafield[@tag = 955]/marc:subfield[@code = \'q\']', namespaces)
+    book.ia_identifier = nodes.first.content.strip if nodes.any?
+
+    book
   end
       
   def as_json(options = { })
