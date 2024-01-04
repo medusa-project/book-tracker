@@ -194,20 +194,6 @@ class Book < ApplicationRecord
 
     book
   end
-      
-  def as_message
-    {"SQS message" => "New or Updated Record for Book: #{self.title}"}
-  end
-  
-  def send_message(message)
-    sqs = Aws::SQS::Client.new(region: 'us-east-2')
-    queue_name = "book-tracker-demo"
-    queue_url = sqs.get_queue_url(queue_name: queue_name).queue_url
-    sqs.send_message({queue_url: queue_url, 
-                        message_body: message.to_json, 
-                        message_attributes: {}})
-    Rails.logger.info("SQS message sent successfully")
-  end
 
   def as_json(options = { })
     {
@@ -234,7 +220,20 @@ class Book < ApplicationRecord
       updated_at: self.updated_at
     }
   end
-
+  
+  def as_message
+    self.as_json
+  end
+  
+  def send_message(message)
+    sqs = Aws::SQS::Client.new(region: 'us-east-2')
+    queue_name = "book-tracker-demo"
+    queue_url = sqs.get_queue_url(queue_name: queue_name).queue_url
+    sqs.send_message({queue_url: queue_url, 
+      message_body: message.to_json, 
+      message_attributes: {}})
+      Rails.logger.info("SQS message sent successfully")
+    end
   ##
   # @return [String] If self.exists_in_hathitrust is true, the expected
   #                  HathiTrust handle of the book. Otherwise, an empty
