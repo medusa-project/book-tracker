@@ -1,4 +1,3 @@
-require 'aws-sdk-sqs'
 ##
 # Source of MARCXML records--currently an S3 bucket.
 #
