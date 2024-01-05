@@ -226,14 +226,15 @@ class Book < ApplicationRecord
   end
   
   def send_message(message)
-    sqs = Aws::SQS::Client.new(region: 'us-east-2')
-    queue_name = "book-tracker-demo"
+    region = Configuration.instance.storage[:books][:region]
+    queue_name = Configuration.instance.storage[:aws][:queue_name]
+    sqs = Aws::SQS::Client.new(region: region)
     queue_url = sqs.get_queue_url(queue_name: queue_name).queue_url
     sqs.send_message({queue_url: queue_url, 
       message_body: message.to_json, 
       message_attributes: {}})
       Rails.logger.info("SQS message sent successfully")
-    end
+  end
   ##
   # @return [String] If self.exists_in_hathitrust is true, the expected
   #                  HathiTrust handle of the book. Otherwise, an empty
