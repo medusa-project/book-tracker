@@ -227,7 +227,7 @@ class Book < ApplicationRecord
   
   def send_message(message)
     region = Configuration.instance.storage[:books][:region]
-    queue_name = Configuration.instance.storage[:aws][:queue_name]
+    queue_name = Configuration.instance.sqs[:queue_name]
     sqs = Aws::SQS::Client.new(region: region)
     queue_url = sqs.get_queue_url(queue_name: queue_name).queue_url
     sqs.send_message({queue_url: queue_url, 
