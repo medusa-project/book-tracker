@@ -229,7 +229,10 @@ class Book < ApplicationRecord
     region = Configuration.instance.storage[:books][:region]
     queue_name = Configuration.instance.sqs[:queue_name]
     sqs = Aws::SQS::Client.new(region: region)
-    queue_url = sqs.get_queue_url(queue_name: queue_name).queue_url
+    sts_client = Aws::STS::Client.new(region: region)
+
+    queue_url = "https://sqs." + region + ".amazonaws.com/" +
+    sts_client.get_caller_identity.account + "/" + queue_name
     sqs.send_message({queue_url: queue_url, 
       message_body: message.to_json, 
       message_attributes: {}})
