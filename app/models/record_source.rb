@@ -43,6 +43,7 @@ class RecordSource
     if task
       Rails.logger.info('RecordSource.import(): updating provided Task')
       task.update!(task_args)
+
     else
       Rails.logger.info('RecordSource.import(): creating new Task')
       task = Task.create!(task_args)
@@ -111,6 +112,7 @@ class RecordSource
                                 record_index, num_invalid_files),
                   status: Task::Status::SUCCEEDED)
       puts task.name
+
       if Rails.env.production? || Rails.env.demo?
         hathi_trust = Hathitrust.new
         ia = InternetArchive.new 
@@ -173,6 +175,10 @@ class RecordSource
   def upsert(batch)
     Rails.logger.debug("RecordSource.upsert(): upserting #{batch.length} records")
     Book.bulk_upsert(batch)
+    batch.each do |book|
+      message = book.as_message
+      book.send_message(message)
+    end
   ensure
     batch.clear
   end

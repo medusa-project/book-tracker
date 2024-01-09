@@ -194,7 +194,7 @@ class Book < ApplicationRecord
 
     book
   end
-      
+
   def as_json(options = { })
     {
       id: self.id,
@@ -220,7 +220,25 @@ class Book < ApplicationRecord
       updated_at: self.updated_at
     }
   end
+  
+  def as_message
+    self.as_json
+  end
+  
+  def send_message(message)
+    return 'This feature does not work in development' if Rails.env.development?
+    region = Configuration.instance.storage[:books][:region]
+    queue_name = Configuration.instance.sqs[:queue_name]
+    sqs = Aws::SQS::Client.new(region: region)
+    sts_client = Aws::STS::Client.new(region: region)
 
+    queue_url = "https://sqs." + region + ".amazonaws.com/" +
+    sts_client.get_caller_identity.account + "/" + queue_name
+    sqs.send_message({queue_url: queue_url, 
+      message_body: message.to_json, 
+      message_attributes: {}})
+      Rails.logger.info("SQS message sent successfully")
+  end
   ##
   # @return [String] If self.exists_in_hathitrust is true, the expected
   #                  HathiTrust handle of the book. Otherwise, an empty

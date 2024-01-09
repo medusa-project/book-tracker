@@ -26,6 +26,7 @@ gem 'scars-bootstrap-theme', github: 'medusa-project/scars-bootstrap-theme',
 gem 'sprockets-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'uiuc_lib_ad', git: 'https://github.com/UIUCLibrary/uiuc_lib_ad.git'
+gem 'aws-sdk-sqs'
 
 group :development do
   gem 'listen'

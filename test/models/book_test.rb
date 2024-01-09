@@ -1,4 +1,6 @@
 require 'test_helper'
+require 'minitest/mock'
+
 
 class BookTest < ActiveSupport::TestCase
 
@@ -131,8 +133,24 @@ class BookTest < ActiveSupport::TestCase
         internet_archive_url: nil, created_at: b2.created_at,
         updated_at: b2.updated_at}
       
-
     assert_equal data, b2.as_json
+  end
+
+  test 'as_message is wrapped as_json' do 
+    b2 = books(:two)
+
+    data = 
+  
+      {id: b2.id, bib_id: 2, oclc_number: "MyString", 
+      obj_id: "2", title: "MyString", volume: "MyString", 
+      author: "MyString", language: nil, subjects: nil, 
+      date: "MyString", url: nil, catalog_url: b2.uiuc_catalog_url, hathitrust_url: nil, 
+      hathitrust_rights: "MyString", hathitrust_access: nil, internet_archive_identifier: "MyString",
+      internet_archive_url: nil, created_at: b2.created_at,
+      updated_at: b2.updated_at}
+
+    assert_equal data, b2.as_message 
+    
   end
 
   test 'service returns which type of record the book is from' do 
@@ -164,5 +182,27 @@ class BookTest < ActiveSupport::TestCase
 
     assert bibid.present?
     assert_equal [base_url, prefix, bibid, suffix].join, b1.uiuc_catalog_url
+  end
+
+  test 'send_message(message) sends sqs message' do 
+    message = { message: "This message" }
+    book = Book.create(title: "Whatever")
+    
+    sts_client_mock = Minitest::Mock.new 
+    sts_client_mock.expect(:get_caller_identity, OpenStruct.new(account: '721945215539'))
+    
+    Aws::STS::Client.stub(:new, sts_client_mock) do 
+      queue_url = 'https://sqs.us-east-1.amazonaws.com/721945215539/book-tracker-demo'
+
+      sqs_client_mock = Minitest::Mock.new 
+      sqs_client_mock.expect(:send_message, nil, [{ queue_url: queue_url, message_body: message.to_json, message_attributes: {} }])
+
+      Aws::SQS::Client.stub(:new, sqs_client_mock) do 
+        book.send_message(message)
+      end
+
+      assert_mock sqs_client_mock
+      assert_mock sts_client_mock 
+    end
   end
 end
