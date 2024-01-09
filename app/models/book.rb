@@ -226,6 +226,7 @@ class Book < ApplicationRecord
   end
   
   def send_message(message)
+    return 'This feature does not work in development' if Rails.env.development?
     region = Configuration.instance.storage[:books][:region]
     queue_name = Configuration.instance.sqs[:queue_name]
     sqs = Aws::SQS::Client.new(region: region)
