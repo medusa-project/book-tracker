@@ -187,13 +187,12 @@ class BookTest < ActiveSupport::TestCase
   test 'send_message(message) sends sqs message' do 
     message = { message: "This message" }
     book = Book.create(title: "Whatever")
-    region = Configuration.instance.storage[:books][:region]
     
     sts_client_mock = Minitest::Mock.new 
     sts_client_mock.expect(:get_caller_identity, OpenStruct.new(account: '721945215539'))
     
     Aws::STS::Client.stub(:new, sts_client_mock) do 
-      queue_url = "https://sqs.#{region}.amazonaws.com/721945215539/book-tracker-demo"
+      queue_url = 'https://sqs.us-east-1.amazonaws.com/721945215539/book-tracker-demo'
 
       sqs_client_mock = Minitest::Mock.new 
       sqs_client_mock.expect(:send_message, nil, [{ queue_url: queue_url, message_body: message.to_json, message_attributes: {} }])
