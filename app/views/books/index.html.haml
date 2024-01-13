@@ -75,7 +75,7 @@
         .col-sm-3
           = hidden_field_tag(:ht, params[:ht])
           = hidden_field_tag(:ia, params[:ia])
-          = text_area_tag(:q, params[:q], placeholder: 'Filter by term or list of bib or object IDs',
+          = text_area_tag(:q, params[:q], placeholder: 'Filter by term, list of bib, object IDs or OCLC number',
                                class: 'form-control', rows: 4, style: 'width:100%')
           .float-right
             .btn-group
