@@ -12,7 +12,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 200, response.status 
   end
 
-  test "can filter by bib id, object id, or oclc number" do 
+  test "can filter by oclc number" do 
     @b6 = books(:six)
     @b5 = books(:five)
     @b4 = books(:four)
@@ -26,6 +26,23 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     oclc_numbers = lines.map(&:strip).select{ |id| id.length == 8 }
 
     filtered_books = @books.select{|b| oclc_numbers.include?(b.oclc_number)}
+    assert_equal filtered_books, [@b5, @b6]
+  end
+
+  test "can filter by bib_id" do 
+    @b6 = books(:six)
+    @b5 = books(:five)
+    @b4 = books(:four)
+
+    @books = [@b4, @b5, @b6]
+
+    get books_url 
+
+    query = "#{@b6.bib_id}\n#{@b5.bib_id}"
+    lines = query.strip.split("\n")
+    bib_ids = lines.map(&:strip).select{ |id| id.length < 8 }
+    bib_ids_i = bib_ids.map{|b| b.to_i}
+    filtered_books = @books.select{|b| bib_ids_i.include?(b.bib_id)}
 
     assert_equal filtered_books, [@b5, @b6]
   end
