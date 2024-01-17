@@ -29,6 +29,24 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal filtered_books, [@b5, @b6]
   end
 
+  test "can filter by object_id" do 
+    @b6 = books(:six)
+    @b5 = books(:five)
+    @b4 = books(:four)
+
+    @books = [@b4, @b5, @b6]
+
+    get books_url 
+
+    query = "#{@b6.obj_id}\n#{@b5.obj_id}"
+    lines = query.strip.split("\n")
+    obj_ids = lines.map{ |x| x.strip[0..20] }.select{ |id| id.length > 8 }
+
+    filtered_books = @books.select{|b| obj_ids.include?(b.obj_id)}
+    
+    assert_equal filtered_books, [@b5, @b6]
+  end
+
   test "can filter by bib_id" do 
     @b6 = books(:six)
     @b5 = books(:five)
