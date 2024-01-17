@@ -19,14 +19,15 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     @books = [@b4, @b5, @b6]
 
-    get books_url 
-
     query = "#{@b6.oclc_number}\n#{@b5.oclc_number}"
-    lines = query.strip.split("\n")
-    oclc_numbers = lines.map(&:strip).select{ |id| id.length == 8 }
 
-    filtered_books = @books.select{|b| oclc_numbers.include?(b.oclc_number)}
-    assert_equal filtered_books, [@b5, @b6]
+    get books_url(q: query, format: :json)
+
+    response_body = JSON.parse(response.body)
+
+    assert_equal 2, response_body['numResults']
+    assert_equal @b6.oclc_number, response_body['results'][0]['oclc_number']
+    assert_equal @b5.oclc_number, response_body['results'][1]['oclc_number']
   end
 
   test "can filter by object_id" do 
@@ -36,15 +37,14 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     @books = [@b4, @b5, @b6]
 
-    get books_url 
-
     query = "#{@b6.obj_id}\n#{@b5.obj_id}"
-    lines = query.strip.split("\n")
-    obj_ids = lines.map{ |x| x.strip[0..20] }.select{ |id| id.length > 8 }
 
-    filtered_books = @books.select{|b| obj_ids.include?(b.obj_id)}
-    
-    assert_equal filtered_books, [@b5, @b6]
+    get books_url(q: query, format: :json)
+
+    response_body = JSON.parse(response.body)
+
+    assert_equal @b6.obj_id, response_body['results'][0]['obj_id']
+    assert_equal @b5.obj_id, response_body['results'][1]['obj_id']
   end
 
   test "can filter by bib_id" do 
@@ -54,15 +54,14 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     @books = [@b4, @b5, @b6]
 
-    get books_url 
-
     query = "#{@b6.bib_id}\n#{@b5.bib_id}"
-    lines = query.strip.split("\n")
-    bib_ids = lines.map(&:strip).select{ |id| id.length < 8 }
-    bib_ids_i = bib_ids.map{|b| b.to_i}
-    filtered_books = @books.select{|b| bib_ids_i.include?(b.bib_id)}
+    
+    get books_url(q: query, format: :json)
 
-    assert_equal filtered_books, [@b5, @b6]
+    response_body = JSON.parse(response.body)
+
+    assert_equal @b6.bib_id, response_body['results'][0]['bib_id']
+    assert_equal @b5.bib_id, response_body['results'][1]['bib_id']
   end
   
   test "return http 200 status request for any particular book" do
