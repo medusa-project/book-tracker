@@ -46,31 +46,40 @@ class BooksController < ApplicationController
       if lines.length > 1
         bib_ids    = lines.map(&:strip).select{ |id| id.length < 8 }
         object_ids = lines.map{ |x| x.strip[0..20] }.select{ |id| id.length > 8 }
-
-        @books = @books.where('bib_id IN (?) OR obj_id IN (?)',
-                              bib_ids, object_ids)
+        oclc_numbers = lines.map(&:strip).select{ |id| id.length == 8 }
+        
+        @books = @books.where('bib_id IN (?) OR obj_id IN (?) OR oclc_number IN (?)',
+        bib_ids, object_ids, oclc_numbers)
         # Compile a list of entered IDs for which books were not found.
         if bib_ids.any?
           sql = "SELECT * FROM "\
-            "(values #{bib_ids.map{ |id| "(#{id})" }.join(',')}) as T(ID) "\
-            "EXCEPT "\
-            "SELECT bib_id "\
-            "FROM books;"
+          "(values #{bib_ids.map{ |id| "(#{id})" }.join(',')}) as T(ID) "\
+          "EXCEPT "\
+          "SELECT bib_id "\
+          "FROM books;"
           @missing_ids += ActiveRecord::Base.connection.execute(sql).map{ |r| r['id'] }
         end
         if object_ids.any?
           sql = "SELECT * FROM "\
-            "(values #{object_ids.map{ |id| "('#{id}')" }.join(',')}) as T(ID) "\
-            "EXCEPT "\
-            "SELECT obj_id "\
-            "FROM books;"
+          "(values #{object_ids.map{ |id| "('#{id}')" }.join(',')}) as T(ID) "\
+          "EXCEPT "\
+          "SELECT obj_id "\
+          "FROM books;"
+          @missing_ids += ActiveRecord::Base.connection.execute(sql).map{ |r| r['id'] }
+        end
+        if oclc_numbers.any? 
+          sql = "SELECT * FROM "\
+          "(values #{oclc_numbers.map{ |id| "('#{id}')" }.join(',')}) as T(ID) "\
+          "EXCEPT "\
+          "SELECT oclc_number "\
+          "FROM books;"
           @missing_ids += ActiveRecord::Base.connection.execute(sql).map{ |r| r['id'] }
         end
       else
         q = query.strip
         qi = q.to_i
         if q == qi.to_s and qi < 2**31 # if the query is an integer
-          @books = @books.where('bib_id = ? OR obj_id = ?', q, q)
+          @books = @books.where('bib_id = ? OR obj_id = ? OR oclc_number = ?', q, q, q)
         elsif q == qi.to_s # if the query is a non-integer number
           @books = @books.where('obj_id = ?', q)
         else
