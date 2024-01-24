@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_09_16_162423) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_24_223528) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -34,8 +34,10 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_16_162423) do
     t.text "raw_marcxml"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "cover_filename"
     t.index ["author"], name: "index_books_on_author"
     t.index ["bib_id"], name: "index_books_on_bib_id"
+    t.index ["cover_filename"], name: "index_books_on_cover_filename"
     t.index ["date"], name: "index_books_on_date"
     t.index ["exists_in_google"], name: "index_books_on_exists_in_google"
     t.index ["exists_in_hathitrust", "exists_in_internet_archive", "exists_in_google"], name: "index_books_on_service_existence_columns"
