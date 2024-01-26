@@ -27,4 +27,32 @@ namespace :books do
     InternetArchive.new.check(t)
   end
 
+  desc 'Iterates through books to make request to open library api and download/store image to s3 bucket.'
+  task :download_book_covers, [:task_id] => :environment do 
+    require 'net/http'
+
+    # loads prior Rails tasks and entire application code needed for new rake task to interact // 
+    # this ensures pry session is hit
+    Rails.application.load_tasks 
+    Rails.application.eager_load!
+
+    
+    s3 = Aws::S3::Client.new(
+      access_key_id: Configuration.instance.storage[:books][:access_key_id],
+      secret_access_key: Configuration.instance.storage[:books][:secret_access_key],
+      region: Configuration.instance.storage[:books][:region]
+    )
+    Book.all.each do |book|
+      uri = URI("http://covers.openlibrary.org/b/oclc/#{book.oclc_number}-L.jpg")
+      response = Net::HTTP.get_response(uri)
+      
+      s3.put_object(
+        bucket: Configuration.instance.storage[:books][:bucket],
+        key: "book_covers/#{book.oclc_number}.jpg",
+        body: response.body 
+      )
+      require 'pry'; binding.pry 
+    end
+  end
+
 end
