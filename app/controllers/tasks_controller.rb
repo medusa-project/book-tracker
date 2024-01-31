@@ -7,7 +7,7 @@ class TasksController < ApplicationController
   before_action :authorize_hathitrust_check, only: :check_hathitrust
   before_action :authorize_internet_archive_check, only: :check_internet_archive
   before_action :check_production, except: :index
-
+  
   ##
   # Responds to POST /check-google
   #
