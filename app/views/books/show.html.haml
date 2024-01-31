@@ -15,6 +15,7 @@
           %br
           %small.date= @book.date
 
+
   .col-sm-3
     .btn-group.float-right{role: 'group'}
       .btn-group{role: 'group'}
@@ -46,6 +47,7 @@
       %h5.card-header Info
       .card-body
         %dl
+          <img src="http://covers.openlibrary.org/b/oclc/#{@book.oclc_number}-M.jpg" alt="Book cover" class="center">
           %dt Bib ID
           %dd= @book.bib_id
           %dt Object ID
