@@ -26,5 +26,5 @@ namespace :books do
     t = args[:task_id].present? ? Task.find(args[:task_id]) : nil
     InternetArchive.new.check(t)
   end
-
+  
 end
