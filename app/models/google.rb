@@ -102,12 +102,8 @@ class Google
       store.delete_object(bucket: bucket, key: @inventory_key)
     end
   end
-
   ##
-  # Invokes a rake task via an ECS task to check the service.
-  #
-  # @param task [Task]
-  # @return [void]
+  # calls on Syncable module run_task() method to invoke rake task
   #
   def check_async(task)
     run_task(:google, task)

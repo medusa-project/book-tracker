@@ -132,15 +132,11 @@ class RecordSource
       Book.analyze_table
     end
   end
-
   ##
-  # Invokes a rake task via an ECS task to import records.
-  #
-  # @param task [Task]
-  # @return [void]
-  #
+  # calls on Syncable module run_task() method to invoke rake task
+  # 
   def import_async(task)
-    run_task(:record_source, task)
+    run_task(:record_source, task) 
   end
   
   private

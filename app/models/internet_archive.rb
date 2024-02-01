@@ -77,16 +77,11 @@ class InternetArchive
       set_existing(ia_id_batch)
     end
   end
-
   ##
-  # Invokes a rake task via an ECS task to check the service.
-  #
-  # @param task [Task]
-  # @return [void]
+  # calls on Syncable module run_task() method to invoke rake task
   #
   def check_async(task)
     run_task(:internet_archive, task)
-     
   end
 
   private
