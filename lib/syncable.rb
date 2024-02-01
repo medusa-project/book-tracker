@@ -1,13 +1,13 @@
 module Syncable
   def run_task(model, task)
-    unless Rails.env.production? or Rails.env.demo?
+    unless Rails.env.production? or Rails.env.demo? 
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
     end
+
     # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
     config = Configuration.instance
     ecs = Aws::ECS::Client.new
-
     command = generate_command(model, task)
 
     args = {
