@@ -50,8 +50,10 @@ module Syncable
         ['bin/rails', "books:check_hathitrust[#{task.id}]"]
       when :google
         ['bin/rails', "books:check_google[#{@inventory_key},#{task.id}]"]
-      else 
+      when :record_source  
         ['bin/rails', "books:import[#{task.id}]"]
+      else
+        "no such model"
     end
   end
 end
