@@ -84,8 +84,9 @@ class InternetArchive
   # @param task [Task]
   # @return [void]
   #
-  def check_async
+  def check_async(task)
     run_task(:internet_archive, task)
+     
   end
 
   private

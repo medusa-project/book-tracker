@@ -3,7 +3,7 @@
 #
 class RecordSource
   include Syncable 
-  
+
   INSERT_BATCH_SIZE = 100
   MARCXML_NAMESPACES = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
 
@@ -139,10 +139,10 @@ class RecordSource
   # @param task [Task]
   # @return [void]
   #
-  def import_async
+  def import_async(task)
     run_task(:record_source, task)
   end
-
+  
   private
 
   def upsert(batch)
