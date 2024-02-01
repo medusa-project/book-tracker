@@ -1,5 +1,12 @@
 module Syncable
+  ##
+  # Invokes a rake task via an ECS task to check the service.
+  #
+  # @param task [Task]
+  # @return [void]
+  #
   def run_task(model, task)
+
     unless Rails.env.production? or Rails.env.demo? 
       raise 'This feature only works in production. '\
           'Elsewhere, use a rake task instead.'
