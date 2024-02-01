@@ -3,6 +3,7 @@
 # corresponding local books with its findings.
 #
 class InternetArchive
+  include Syncable 
 
   TASK_UPDATE_INTERVAL = 1000
   UPDATE_BATCH_SIZE    = 1000

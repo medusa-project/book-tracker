@@ -2,7 +2,8 @@
 # Source of MARCXML records--currently an S3 bucket.
 #
 class RecordSource
-
+  include Syncable 
+  
   INSERT_BATCH_SIZE = 100
   MARCXML_NAMESPACES = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
 
