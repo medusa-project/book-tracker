@@ -2,6 +2,7 @@
 # Source of MARCXML records--currently an S3 bucket.
 #
 class RecordSource
+  include Syncable 
 
   INSERT_BATCH_SIZE = 100
   MARCXML_NAMESPACES = { 'marc' => 'http://www.loc.gov/MARC21/slim' }
@@ -131,45 +132,13 @@ class RecordSource
       Book.analyze_table
     end
   end
-
   ##
-  # Invokes a rake task via an ECS task to import records.
-  #
-  # @param task [Task]
-  # @return [void]
-  #
+  # calls on Syncable module run_task() method to invoke rake task
+  # 
   def import_async(task)
-    unless Rails.env.production? or Rails.env.demo? 
-      raise 'This feature only works in production. '\
-          'Elsewhere, use a rake task instead.'
-    end
-
-    # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ECS/Client.html#run_task-instance_method
-    config = Configuration.instance
-    ecs = Aws::ECS::Client.new
-    args = {
-        cluster: config.ecs_cluster,
-        task_definition: config.ecs_async_task_definition,
-        launch_type: 'FARGATE',
-        overrides: {
-            container_overrides: [
-                {
-                    name: config.ecs_async_task_container,
-                    command: ['bin/rails', "books:import[#{task.id}]"]
-                },
-            ]
-        },
-        network_configuration: {
-            awsvpc_configuration: {
-                subnets: [config.ecs_subnet],
-                security_groups: [config.ecs_security_group],
-                assign_public_ip: 'ENABLED'
-            },
-        }
-    }
-    ecs.run_task(args)
+    run_task(:record_source, task) 
   end
-
+  
   private
 
   def upsert(batch)
