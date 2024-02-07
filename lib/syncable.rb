@@ -53,7 +53,7 @@ module Syncable
       when :record_source  
         ['bin/rails', "books:import[#{task.id}]"]
       else
-        "no such model"
+        raise 'No such model'
     end
   end
 end
