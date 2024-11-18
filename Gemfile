@@ -30,4 +30,9 @@ gem 'aws-sdk-sqs'
 
 group :development do
   gem 'listen'
+  gem 'pry', '~> 0.14.1'
+end
+
+group :test do 
+  gem 'mocha'
 end
