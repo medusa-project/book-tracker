@@ -51,20 +51,17 @@ class Book < ApplicationRecord
     return unless length > 0
 
     sql = StringIO.new
-    sql << sprintf('UPDATE books SET %s = $%d WHERE %s IN (',
-                   column, length + 1, where_column)
+    sql << sprintf('UPDATE books SET %s = %s WHERE %s IN (', column, new_value, where_column)
     length.times do |index|
       sql << "$#{index + 1}"
-      sql << ', ' if index < length - 1
+      if index < length - 1
+        sql << ', '
+      end
     end
-    #   if index < length - 1
-    #     sql << ', '
-    #   end
-    # end
     sql << ');'
 
-    binds = batch + [new_value]
-
+    binds = batch 
+  
     Rails.logger.debug("Book.bulk_update(): updating #{batch.length} records")
     ActiveRecord::Base.connection.exec_query(sql.string, 'SQL', binds, prepare: true)
   rescue => e
