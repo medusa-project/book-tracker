@@ -52,10 +52,12 @@ class InternetArchive
         ia_id = node.content
         ia_id_batch << ia_id 
 
-        book = Book.find_by_obj_id(ia_id)
+        Rails.logger.debug("Looking for book with ia_identifier: #{ia_id}")
+        book = Book.find_by(ia_identifier: ia_id)
         if book 
           book.update!(exists_in_internet_archive: true)
         end
+        Rails.logger.debug("Found book: #{book.inspect}")
         # ia_id_batch << node.content
         # set_existing_if_necessary(ia_id_batch)
 
