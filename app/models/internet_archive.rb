@@ -49,8 +49,17 @@ class InternetArchive
 
       doc.xpath('//result/doc/str').each_with_index do |node, index|
         actual_num_items += 1
-        ia_id_batch << node.content
-        set_existing_if_necessary(ia_id_batch)
+        ia_id = node.content
+        ia_id_batch << ia_id 
+
+        Rails.logger.debug("Looking for book with ia_identifier: #{ia_id}")
+        book = Book.find_by(ia_identifier: ia_id)
+        if book 
+          book.update!(exists_in_internet_archive: true)
+        end
+        Rails.logger.debug("Found book: #{book.inspect}")
+        # ia_id_batch << node.content
+        # set_existing_if_necessary(ia_id_batch)
 
         if index % TASK_UPDATE_INTERVAL == 0
           task.update!(name: "Checking Internet Archive: scanned "\
@@ -74,7 +83,8 @@ class InternetArchive
                    status: Task::Status::SUCCEEDED)
       puts task.name
     ensure
-      set_existing(ia_id_batch)
+      Book.where(ia_identifier: ia_id_batch).update_all(exists_in_internet_archive: true)
+      # set_existing(ia_id_batch)
     end
   end
   ##

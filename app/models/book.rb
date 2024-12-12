@@ -51,30 +51,19 @@ class Book < ApplicationRecord
     return unless length > 0
 
     sql = StringIO.new
-    sql << sprintf('UPDATE books SET %s = $%d WHERE %s IN (', column, length + 1, where_column)
+    sql << sprintf('UPDATE books SET %s = %s WHERE %s IN (', column, new_value, where_column)
     length.times do |index|
       sql << "$#{index + 1}"
-      sql << ', ' if index < length - 1
-      # if index < length - 1
-      #   sql << ', '
-      # end
+      if index < length - 1
+        sql << ', '
+      end
     end
     sql << ');'
 
-    # new_value = ActiveRecord::Base.connection.quote(new_value == 'true')
-    new_value = new_value == 'true' ? true : false 
-    binds = batch.map { |id| [nil, id] } + [[nil, new_value]]
-    binds = batch + [new_value]
-    # binds = batch + [new_value]
-    # binds = batch 
+    binds = batch 
 
-    result = ActiveRecord::Base.connection.exec_update(sql.string, 'SQL', binds)
-    # require 'pry'; binding.pry 
-    Rails.logger.debug("Book.bulk_update(): SQL query - #{sql.string}")
-    Rails.logger.debug("Book.bulk_update(): Bind values - #{binds.inspect}")
     Rails.logger.debug("Book.bulk_update(): updating #{batch.length} records")
-    Rails.logger.debug("Book.bulk_update(): updated #{result} records")
-
+    ActiveRecord::Base.connection.exec_query(sql.string, 'SQL', binds, prepare: true)
   rescue => e
       Rails.logger.error("Book.bulk_update(): #{e}\nSQL: #{sql.string}")
       raise e
