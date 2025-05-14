@@ -23,6 +23,8 @@ gem 'rails', '~> 7'
 gem 'sassc'
 gem 'scars-bootstrap-theme', github: 'medusa-project/scars-bootstrap-theme',
     branch: 'release/bootstrap-4.4'
+gem 'selenium-webdriver'
+gem 'webdrivers'
 gem 'sprockets-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'uiuc_lib_ad', git: 'https://github.com/UIUCLibrary/uiuc_lib_ad.git'
