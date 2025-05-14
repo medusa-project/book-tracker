@@ -101,31 +101,61 @@ class Hathitrust
   private
   
   def find_hathifile_url(task)
+    require 'selenium-webdriver'
     # As there is no single URI for the latest HathiFile, we have to scrape
     # the HathiFile listing out of the index HTML page.
     task.update!(name: 'Checking HathiTrust: downloading HathiFile index...')
     puts task.name
 
-    uri          = URI.parse('https://www.hathitrust.org/hathifiles')
-    response     = Net::HTTP.get_response(uri)
-    location     = response['location']
-    base_url     = 'https://www.hathitrust.org'
-    res          = base_url + location
+    options = Selenium::WebDriver::Chrome::Options.new
+    options.add_argument('--headless=new') # Run in headless mode
+    options.add_argument('--disable-gpu') # Disable GPU hardware acceleration
+    options.add_argument('--no-sandbox') # Bypass OS security
+    options.add_argument('--disable-blink-features=AutomationControlled') # Disable automation control
+    options.add_argument('--window-size=1920,1080') # Set window size for headless mode
+    options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
-    if response.code.start_with?("3")
-      new_response = Net::HTTP.get_response(URI(res))
-      page         = Nokogiri::HTML(new_response.body)
-    else
-      page         = Nokogiri::HTML(response.body)
+    options.add_option('excludeSwitches', ['enable-automation']) # Exclude automation switch
+    options.add_option('useAutomationExtension', false) # Disable automation extension
+
+    driver = Selenium::WebDriver.for(:chrome, options: options)
+    begin
+      driver.navigate.to('https://www.hathitrust.org/hathifiles')
+      
+      wait = Selenium::WebDriver::Wait.new(timeout: 15)
+      wait.until do 
+        driver.find_elements(css: '.btable-wrapper table.btable tbody tr td a').any? 
+      end
+
+      links = driver.find_elements(css: '.btable-wrapper table.btable tbody tr td a')
+      hathi_links = links.select { |a| a.text.start_with?('hathi_full_') }
+      latest = hathi_links.sort_by { |a| a.text }.last
+      latest['href']
+    ensure
+      driver.quit
     end
-
-    # Scrape the URI of the latest HathiFile out of the index
-    node     = page.css('.btable-wrapper table.btable tbody tr td a')
-                   .select{ |h| h.text.start_with?('hathi_full_') }
-                   .sort{ |x,y| x.text <=> y.text }
-                   .reverse[0]
-    node['href']
   end
+
+    # uri          = URI.parse('https://www.hathitrust.org/hathifiles')
+    # response     = Net::HTTP.get_response(uri)
+    # location     = response['location']
+    # base_url     = 'https://www.hathitrust.org'
+    # res          = base_url + location
+
+    # if response.code.start_with?("3")
+    #   new_response = Net::HTTP.get_response(URI(res))
+    #   page         = Nokogiri::HTML(new_response.body)
+    # else
+    #   page         = Nokogiri::HTML(response.body)
+    # end
+
+    # # Scrape the URI of the latest HathiFile out of the index
+    # node     = page.css('.btable-wrapper table.btable tbody tr td a')
+    #                .select{ |h| h.text.start_with?('hathi_full_') }
+    #                .sort{ |x,y| x.text <=> y.text }
+    #                .reverse[0]
+    # node['href']
+  # end
 
   ##
   # @param uri [String] The URI/URL at which the HathiFile resides.
