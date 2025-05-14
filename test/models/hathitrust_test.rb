@@ -33,4 +33,20 @@ class HathitrustTest < ActiveSupport::TestCase
       assert_equal 'new_access', book.hathitrust_access 
       assert_equal 'new_rights', book.hathitrust_rights
   end
+
+  test 'selenium webdriver correctly scrapes the HathiTrust page' do 
+    # Mock the Selenium WebDriver
+    driver = mock('driver')
+    navigation = mock('navigation')
+    Selenium::WebDriver.stubs(:for).returns(driver)
+    driver.stubs(:navigate).returns(navigation)
+    navigation.stubs(:to).with('https://www.hathitrust.org/hathifiles')
+    driver.stubs(:find_elements).returns([
+      stub(text: 'hathi_full_20250501.txt', '[]' => 'https://www.hathitrust.org/hathifiles/'),
+    ])
+    driver.stubs(:quit)
+
+    url = @hathitrust.send(:find_hathifile_url, @task)
+    assert_equal 'https://www.hathitrust.org/hathifiles/', url
+  end
 end
