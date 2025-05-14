@@ -121,7 +121,7 @@ class Hathitrust
     driver = Selenium::WebDriver.for(:chrome, options: options)
     begin
       driver.navigate.to('https://www.hathitrust.org/hathifiles')
-      
+
       wait = Selenium::WebDriver::Wait.new(timeout: 15)
       wait.until do 
         driver.find_elements(css: '.btable-wrapper table.btable tbody tr td a').any? 
@@ -136,26 +136,6 @@ class Hathitrust
     end
   end
 
-    # uri          = URI.parse('https://www.hathitrust.org/hathifiles')
-    # response     = Net::HTTP.get_response(uri)
-    # location     = response['location']
-    # base_url     = 'https://www.hathitrust.org'
-    # res          = base_url + location
-
-    # if response.code.start_with?("3")
-    #   new_response = Net::HTTP.get_response(URI(res))
-    #   page         = Nokogiri::HTML(new_response.body)
-    # else
-    #   page         = Nokogiri::HTML(response.body)
-    # end
-
-    # # Scrape the URI of the latest HathiFile out of the index
-    # node     = page.css('.btable-wrapper table.btable tbody tr td a')
-    #                .select{ |h| h.text.start_with?('hathi_full_') }
-    #                .sort{ |x,y| x.text <=> y.text }
-    #                .reverse[0]
-    # node['href']
-  # end
 
   ##
   # @param uri [String] The URI/URL at which the HathiFile resides.
