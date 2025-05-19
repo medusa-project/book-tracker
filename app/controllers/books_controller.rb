@@ -241,6 +241,7 @@ class BooksController < ApplicationController
     respond_to do |format|
       format.html
       format.json { render json: @book }
+      format.any { head :not_acceptable}
     end
   end
 
