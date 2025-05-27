@@ -1,2 +1,5 @@
 require 'selenium-webdriver'
-Selenium::WebDriver::Chrome::Service.driver_path = '/usr/bin/chromedriver'
+
+if Rails.env.demo? || Rails.env.production? || ENV['DOCKER']
+  Selenium::WebDriver::Chrome::Service.driver_path = '/usr/bin/chromedriver'
+end
