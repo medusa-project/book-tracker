@@ -43,7 +43,7 @@ RUN apt-get update && apt-get install -y \
   libxfixes3 \
   libxi6 \
   libxrandr2 \
-  xdg-utils
+  xdg-utils  \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
