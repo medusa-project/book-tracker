@@ -24,7 +24,6 @@ gem 'sassc'
 gem 'scars-bootstrap-theme', github: 'medusa-project/scars-bootstrap-theme',
     branch: 'release/bootstrap-4.4'
 gem 'selenium-webdriver'
-gem 'webdrivers'
 gem 'sprockets-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'uiuc_lib_ad', git: 'https://github.com/UIUCLibrary/uiuc_lib_ad.git'
@@ -33,8 +32,10 @@ gem 'aws-sdk-sqs'
 group :development do
   gem 'listen'
   gem 'pry', '~> 0.14.1'
+  gem 'webdrivers'
 end
 
 group :test do 
   gem 'mocha'
+  gem 'webdrivers'
 end
