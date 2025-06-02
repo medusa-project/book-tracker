@@ -10,12 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2022_09_16_162423) do
+ActiveRecord::Schema[7.1].define(version: 2025_06_02_185801) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "books", force: :cascade do |t|
-    t.integer "bib_id"
+    t.string "bib_id"
     t.string "oclc_number"
     t.string "obj_id"
     t.string "title"
