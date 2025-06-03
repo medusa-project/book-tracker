@@ -53,7 +53,7 @@ class BooksController < ApplicationController
         # Compile a list of entered IDs for which books were not found.
         if bib_ids.any?
           sql = "SELECT * FROM "\
-          "(values #{bib_ids.map{ |id| "(#{id})" }.join(',')}) as T(ID) "\
+          "(values #{bib_ids.map{ |id|"('#{id.gsub("'", "''")}')" }.join(',')}) as T(ID) "\
           "EXCEPT "\
           "SELECT bib_id "\
           "FROM books;"

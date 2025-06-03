@@ -1,7 +1,7 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  bib_id: 1
+  bib_id: "1"
   oclc_number: MyString
   obj_id: 001
   title: MyString
@@ -17,7 +17,7 @@ one:
   hathitrust_rights: MyString
 
 two:
-  bib_id: 2
+  bib_id: "2"
   oclc_number: MyString
   obj_id: 002
   title: MyString
@@ -33,7 +33,7 @@ two:
   hathitrust_rights: MyString
 
 three:
-  bib_id: 3
+  bib_id: "3"
   oclc_number: MyString
   obj_id: 003
   title: MyString
@@ -49,7 +49,7 @@ three:
   hathitrust_rights: MyString
 
 four:
-  bib_id: 4
+  bib_id: "4"
   oclc_number: MyString
   obj_id: 004
   title: MyString
@@ -66,7 +66,7 @@ four:
 
 five: 
   id: 1
-  bib_id: 272087
+  bib_id: "272087"
   oclc_number: "03493895"
   obj_id: "30112048976390"
   title: "National Clearinghouse on Aging thesaurus"
@@ -86,7 +86,7 @@ five:
 
 six: 
   id: 868521
-  bib_id: 4737365
+  bib_id: "4737365"
   oclc_number: "55069825"
   obj_id: "ark:/13960/t4pk0b42v"
   title: "Crito een dialoog van Plato /"

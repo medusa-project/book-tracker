@@ -24,7 +24,7 @@ class BookTest < ActiveSupport::TestCase
     books = [
       Book.new(
             author: 'Dr. Seuss',
-            bib_id: 123,
+            bib_id: '123',
             date: '1974',
             exists_in_hathitrust: false,
             exists_in_internet_archive: false,
@@ -42,7 +42,7 @@ class BookTest < ActiveSupport::TestCase
             volume: nil),
       Book.new(
             author: 'Dr. Seuss',
-            bib_id: 234,
+            bib_id: '234',
             date: '1975',
             exists_in_hathitrust: false,
             exists_in_internet_archive: false,
@@ -60,7 +60,7 @@ class BookTest < ActiveSupport::TestCase
             volume: nil),
       Book.new( # same obj_id as the first one
             author: 'Dr. Seuss',
-            bib_id: 123,
+            bib_id: '123',
             date: '1975',
             exists_in_hathitrust: false,
             exists_in_internet_archive: false,
@@ -108,7 +108,7 @@ class BookTest < ActiveSupport::TestCase
 
     book = Book.from_marcxml_record(key: key, record: record)
     assert_equal key, book.source_path
-    assert_equal 272087, book.bib_id
+    assert_equal '272087', book.bib_id
     assert_equal "03493895", book.oclc_number
     assert_equal "", book.author
     assert_equal "National Clearinghouse on Aging thesaurus", book.title
@@ -125,7 +125,7 @@ class BookTest < ActiveSupport::TestCase
 
     data = 
       
-        {id: b2.id, bib_id: 2, oclc_number: "MyString", 
+        {id: b2.id, bib_id: "2", oclc_number: "MyString", 
         obj_id: "2", title: "MyString", volume: "MyString", 
         author: "MyString", language: nil, subjects: nil, 
         date: "MyString", url: nil, catalog_url: b2.uiuc_catalog_url, hathitrust_url: nil, 
@@ -141,7 +141,7 @@ class BookTest < ActiveSupport::TestCase
 
     data = 
   
-      {id: b2.id, bib_id: 2, oclc_number: "MyString", 
+      {id: b2.id, bib_id: "2", oclc_number: "MyString", 
       obj_id: "2", title: "MyString", volume: "MyString", 
       author: "MyString", language: nil, subjects: nil, 
       date: "MyString", url: nil, catalog_url: b2.uiuc_catalog_url, hathitrust_url: nil, 
