@@ -5,7 +5,7 @@ FROM ruby:3.2.2-slim
 
 # Set Environment Variables
 ENV RAILS_ENV=production
-ENV DOCKER=true 
+# ENV DOCKER=true 
 # Sends log output (log msgs/error msgs) to the standard output instead of saving to log files.
 ENV RAILS_LOG_TO_STDOUT=true
 # The app's web server is configured to serve static files (CSS, JS, etc) directly to client instead of serving from the app server.
