@@ -101,39 +101,17 @@ class Hathitrust
   private
   
   def find_hathifile_url(task)
-    require 'selenium-webdriver'
     # As there is no single URI for the latest HathiFile, we have to scrape
     # the HathiFile listing out of the index HTML page.
     task.update!(name: 'Checking HathiTrust: downloading HathiFile index...')
     puts task.name
-
-    options = Selenium::WebDriver::Chrome::Options.new
-    options.add_argument('--headless=new') # Run in headless mode
-    options.add_argument('--disable-gpu') # Disable GPU hardware acceleration
-    options.add_argument('--no-sandbox') # Bypass OS security
-    options.add_argument('--disable-blink-features=AutomationControlled') # Disable automation control
-    options.add_argument('--window-size=1920,1080') # Set window size for headless mode
-    options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-
-    options.add_option('excludeSwitches', ['enable-automation']) # Exclude automation switch
-    options.add_option('useAutomationExtension', false) # Disable automation extension
-
-    driver = Selenium::WebDriver.for(:chrome, options: options)
-    begin
-      driver.navigate.to('https://www.hathitrust.org/hathifiles')
-
-      wait = Selenium::WebDriver::Wait.new(timeout: 15)
-      wait.until do 
-        driver.find_elements(css: '.btable-wrapper table.btable tbody tr td a').any? 
-      end
-
-      links = driver.find_elements(css: '.btable-wrapper table.btable tbody tr td a')
-      hathi_links = links.select { |a| a.text.start_with?('hathi_full_') }
-      latest = hathi_links.sort_by { |a| a.text }.last
-      latest['href']
-    ensure
-      driver.quit
-    end
+    
+    uri = URI("https://www.hathitrust.org/files/hathifiles/hathi_file_list.json")
+    content = Net::HTTP.get(uri)
+    json = JSON.parse(content)
+    hathi_file_list = json.select { |datum| datum["full"] }
+    sorted_list = hathi_file_list.sort { |a, b| b["filename"] <=> a["filename"] }
+    sorted_list.first["url"]
   end
 
 
