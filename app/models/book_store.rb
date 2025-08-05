@@ -75,13 +75,11 @@ class BookStore
   private
 
   def get_client
-    @client = Aws::S3::Client.new(self.class.client_options) unless @client
-    @client
+    Aws::S3::Client.new(self.class.client_options)
   end
 
   def get_resource
-    @resource = Aws::S3::Resource.new(self.class.client_options) unless @resource
-    @resource
+    Aws::S3::Resource.new(self.class.client_options) 
   end
 
 end
