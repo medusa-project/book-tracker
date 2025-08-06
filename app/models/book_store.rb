@@ -75,13 +75,26 @@ class BookStore
   private
 
   def get_client
-    @client = Aws::S3::Client.new(self.class.client_options) unless @client
-    @client
+    client = Aws::S3::Client.new(self.class.client_options)
+    log_credential_info(client)
+    client
   end
 
   def get_resource
-    @resource = Aws::S3::Resource.new(self.class.client_options) unless @resource
-    @resource
+    resource = Aws::S3::Resource.new(self.class.client_options)
+    log_credential_info(resource.client)
+    resource
+  end
+
+  def log_credential_info(client)
+    creds = client.config.credentials
+    if creds.respond_to?(:expiration)
+      Rails.logger.info("[BookStore] AWS credentials expiration: \\#{creds.expiration}")
+    else
+      Rails.logger.info("[BookStore] AWS credentials: \\#{creds.inspect}")
+    end
+  rescue => e
+    Rails.logger.warn("[BookStore] Could not log AWS credential info: \\#{e}")
   end
 
 end
