@@ -7,7 +7,21 @@
 #
 class BookStore
 
-  Rails.logger.info("ENV AWS variables: #{ENV.select { |k, _| k.include?('AWS') }}")
+  Rails.logger.info("ENV AWS variables: #{ENV.select { |k, _| k.include?("AWS") }}")
+  Rails.logger.info("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: #{ENV["AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"]}")
+  begin
+    if ENV["AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"]
+      require 'net/http'
+      uri = URI("http://169.254.170.2#{ENV["AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"]}")
+      res = Net::HTTP.get_response(uri)
+      Rails.logger.info("[BookStore] ECS metadata endpoint HTTP status: #{res.code}")
+      Rails.logger.info("[BookStore] ECS metadata endpoint body: #{res.body}")
+    else
+      Rails.logger.warn("[BookStore] AWS_CONTAINER_CREDENTIALS_RELATIVE_URI not set")
+    end
+  rescue => e
+    Rails.logger.warn("[BookStore] Error fetching ECS credentials endpoint: #{e}")
+  end
 
   include Singleton
 
