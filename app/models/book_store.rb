@@ -75,20 +75,24 @@ class BookStore
   private
 
   def get_client
-    @client ||= begin
+    refresh_interval = 3000 # seconds (50 minutes)
+    if !@client || !@client_created_at || (Time.now - @client_created_at) > refresh_interval
       log_env_and_ecs_metadata
-      client = Aws::S3::Client.new(self.class.client_options)
-      log_credential_info(client)
-      client
+      @client = Aws::S3::Client.new(self.class.client_options)
+      @client_created_at = Time.now
+      log_credential_info(@client)
     end
+    @client
   end
 
   def get_resource
-    @resource ||= begin
-      resource = Aws::S3::Resource.new(self.class.client_options)
-      log_credential_info(resource.client)
-      resource
+    refresh_interval = 3000 # seconds (50 minutes)
+    if !@resource || !@resource_created_at || (Time.now - @resource_created_at) > refresh_interval
+      @resource = Aws::S3::Resource.new(self.class.client_options)
+      @resource_created_at = Time.now
+      log_credential_info(@resource.client)
     end
+    @resource
   end
 
   def log_env_and_ecs_metadata
