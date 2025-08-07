@@ -75,16 +75,20 @@ class BookStore
   private
 
   def get_client
-    log_env_and_ecs_metadata
-    client = Aws::S3::Client.new(self.class.client_options)
-    log_credential_info(client)
-    client
+    @client ||= begin
+      log_env_and_ecs_metadata
+      client = Aws::S3::Client.new(self.class.client_options)
+      log_credential_info(client)
+      client
+    end
   end
 
   def get_resource
-    resource = Aws::S3::Resource.new(self.class.client_options)
-    log_credential_info(resource.client)
-    resource
+    @resource ||= begin
+      resource = Aws::S3::Resource.new(self.class.client_options)
+      log_credential_info(resource.client)
+      resource
+    end
   end
 
   def log_env_and_ecs_metadata
