@@ -66,6 +66,9 @@ class BookStore
       get_client.head_object(bucket: BUCKET, key: key)
     rescue Aws::S3::Errors::NotFound
       return false
+    rescue Aws::S3::Errors::ServiceError => e
+      Rails.logger.error("BookStore.object_exists?(): Error checking for object #{key} in bucket #{BUCKET}: #{e.message}")
+      raise
     else
       return true
     end
@@ -75,54 +78,23 @@ class BookStore
   private
 
   def get_client
+    Rails.logger.warn("[BookStore] get_client called")
     refresh_interval = 3000 # seconds (50 minutes)
     if !@client || !@client_created_at || (Time.now - @client_created_at) > refresh_interval
-      log_env_and_ecs_metadata
       @client = Aws::S3::Client.new(self.class.client_options)
       @client_created_at = Time.now
-      log_credential_info(@client)
     end
     @client
   end
 
   def get_resource
+    Rails.logger.warn("[BookStore] get_resource called")
     refresh_interval = 3000 # seconds (50 minutes)
     if !@resource || !@resource_created_at || (Time.now - @resource_created_at) > refresh_interval
       @resource = Aws::S3::Resource.new(self.class.client_options)
       @resource_created_at = Time.now
-      log_credential_info(@resource.client)
     end
     @resource
-  end
-
-  def log_env_and_ecs_metadata
-    Rails.logger.info("ENV AWS variables: #{ENV.select { |k, _| k.include?("AWS") }}")
-    Rails.logger.info("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: #{ENV["AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"]}")
-    begin
-      if ENV["AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"]
-        require 'net/http'
-        uri = URI("http://169.254.170.2#{ENV["AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"]}")
-        res = Net::HTTP.get_response(uri)
-        Rails.logger.info("[BookStore] ECS metadata endpoint HTTP status: #{res.code}")
-        Rails.logger.info("[BookStore] ECS metadata endpoint body: #{res.body}")
-      else
-        Rails.logger.warn("[BookStore] AWS_CONTAINER_CREDENTIALS_RELATIVE_URI not set")
-      end
-    rescue => e
-      Rails.logger.warn("[BookStore] Error fetching ECS credentials endpoint: #{e}")
-    end
-  end
-
-  def log_credential_info(client)
-    creds = client.config.credentials
-    Rails.logger.info("[BookStore] AWS credentials class: #{creds.class}")
-    if creds.respond_to?(:expiration)
-      Rails.logger.info("[BookStore] AWS credentials expiration: \\#{creds.expiration}")
-    else
-      Rails.logger.info("[BookStore] AWS credentials: \\#{creds.inspect}")
-    end
-  rescue => e
-    Rails.logger.warn("[BookStore] Could not log AWS credential info: \\#{e}")
   end
 
 end
