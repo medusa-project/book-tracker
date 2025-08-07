@@ -7,6 +7,8 @@
 #
 class BookStore
 
+  Rails.logger.info("ENV AWS variables: #{ENV.select { |k, _| k.include?('AWS') }}")
+
   include Singleton
 
   BUCKET = ::Configuration.instance.storage.dig(:books, :bucket)
@@ -88,6 +90,7 @@ class BookStore
 
   def log_credential_info(client)
     creds = client.config.credentials
+    Rails.logger.info("[BookStore] AWS credentials class: #{creds.class}")
     if creds.respond_to?(:expiration)
       Rails.logger.info("[BookStore] AWS credentials expiration: \\#{creds.expiration}")
     else
