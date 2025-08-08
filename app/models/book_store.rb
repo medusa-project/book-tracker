@@ -84,7 +84,7 @@ class BookStore
 
   def get_resource
     Rails.logger.warn("[BookStore] get_resource called")
-    if !@resource || credentials_expired?(@resource)
+    if !@resource || credentials_expired?(@resource.client)
       @resource = Aws::S3::Resource.new(self.class.client_options)
     end
     @resource
