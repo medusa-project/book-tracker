@@ -76,22 +76,23 @@ class BookStore
 
   def get_client
     Rails.logger.warn("[BookStore] get_client called")
-    refresh_interval = 3000 # seconds (50 minutes)
-    if !@client || !@client_created_at || (Time.now - @client_created_at) > refresh_interval
+    if !@client || credentials_expired?(@client)
       @client = Aws::S3::Client.new(self.class.client_options)
-      @client_created_at = Time.now
     end
     @client
   end
 
   def get_resource
     Rails.logger.warn("[BookStore] get_resource called")
-    refresh_interval = 3000 # seconds (50 minutes)
-    if !@resource || !@resource_created_at || (Time.now - @resource_created_at) > refresh_interval
+    if !@resource || credentials_expired?(@resource)
       @resource = Aws::S3::Resource.new(self.class.client_options)
-      @resource_created_at = Time.now
     end
     @resource
+  end
+
+  def credentials_expired?(client)
+    creds = client.config.credentials
+    creds.respond_to?(:expired?) && creds.expired?
   end
 
 end
