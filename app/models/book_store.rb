@@ -19,11 +19,13 @@ class BookStore
     opts[:endpoint]         = endpoint if endpoint.present?
     opts[:force_path_style] = endpoint.present?
 
-    access_key_id     = config.storage.dig(:books, :access_key_id)
-    secret_access_key = config.storage.dig(:books, :secret_access_key)
-    if access_key_id.present? && secret_access_key.present?
-      opts[:credentials] = Aws::Credentials.new(access_key_id,
-                                                secret_access_key)
+    if ENV['AWS_EXECUTION_ENV'].nil?
+      access_key_id     = config.storage.dig(:books, :access_key_id)
+      secret_access_key = config.storage.dig(:books, :secret_access_key)
+      if access_key_id.present? && secret_access_key.present?
+        opts[:credentials] = Aws::Credentials.new(access_key_id,
+                                                  secret_access_key)
+      end
     end
     opts
   end
