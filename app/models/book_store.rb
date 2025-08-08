@@ -66,9 +66,6 @@ class BookStore
       get_client.head_object(bucket: BUCKET, key: key)
     rescue Aws::S3::Errors::NotFound
       return false
-    rescue Aws::S3::Errors::ServiceError => e
-      Rails.logger.error("BookStore.object_exists?(): Error checking for object #{key} in bucket #{BUCKET}: #{e.message}")
-      raise
     else
       return true
     end
