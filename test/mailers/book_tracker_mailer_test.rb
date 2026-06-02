@@ -31,8 +31,8 @@ class BookTrackerMailerTest < ActionMailer::TestCase
     assert_equal [recipient], email.to
     assert_equal "[TEST: Book Tracker] Hello from Book Tracker", email.subject
 
-    assert_equal "Hello from Book Tracker!", email.body.raw_source
-    
+    assert_equal render_template("test.txt"), email.text_part.body.raw_source
+    assert_equal render_template("test.html"), email.html_part.body.raw_source
   end
 
 
