@@ -15,7 +15,7 @@ class BookTrackerMailerTest < ActionMailer::TestCase
     assert_equal config.admin_emails, email.to
     
     assert_equal "[TEST: Book Tracker] System Error", email.subject
-    assert_equal "Something broke", email.body.raw_source
+    assert_equal "Something broke", email.body.raw_source.strip
   end
   
   # test()
